@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<style>
+
+</style>
+<md-dialog style="height: auto; width: 500px">
+    <form >
+        <md-toolbar style="margin-bottom: 5px">
+            <div class="md-toolbar-tools" ng-show="!FileUploaded">
+                <h2> No Input XLSX Files Detected </h2>
+            </div>
+            <div class="md-toolbar-tools" layout="column" ng-show="FileUploaded">
+                <h2 style="margin-bottom: 15px; margin-top: 10px; align-self: flex-start">Input Layer Parameters</h2>
+                <span flex style="font-size: 9pt; align-self: flex-start"> Select the necessary input parameters and the target output for the neural net</span>
+            </div>
+        </md-toolbar>
+        <md-dialog-content ng-show="FileUploaded">
+            <md-list style="margin: 0px">
+                <md-list-item style="margin-top: 5px; margin-bottom: 0px; padding-bottom: 0px">
+                    <h4 style="width: 150px ;margin-right: 50px; align-self: flex-end">Parameter Name</h4>
+                    <h4 style="width: 50px;margin-right: 65px;margin-left: 50px; align-self: flex-end">Input</h4>
+                    <h4 style="width: 50px align-self: flex-end">Target</h4>
+                </md-list-item>
+                <md-divider></md-divider>
+                <md-list-item ng-repeat="header in JSON_header" style="margin: 0px; padding: 0px">
+                    <h4 style="border-color: black; width: 150px ;padding: 0px; margin-left: 50px; align-self: center">{{ header.header }}</h4>
+                    <md-checkbox class="md-primary md-raised" ng-model="header.input"  style="border-color: black; width: 50px; padding: 0px; margin-left: 50px; align-self: center"></md-checkbox>
+                    <md-checkbox class="md-primary md-raised" ng-model="header.target" ng-change="CheckboxDisable(header.target,header.header)"  style="border-color: black; width: 50px; padding: 0px; margin-left:50px"></md-checkbox>
+                </md-list-item>
+            </md-list>
+        </md-dialog-content>
+        <md-divider></md-divider>
+
+    </form>
+    <md-dialog-actions layout="row">
+        <span flex></span>
+        <md-button ng-click="answer()" ng-show="FileUploaded" class="md-primary md-raised">OK</md-button>
+        <md-button ng-click="cancel()" class="md-primary md-raised">Cancel</md-button>
+    </md-dialog-actions>
+
+</md-dialog>

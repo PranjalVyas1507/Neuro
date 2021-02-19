@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<!--  -->
+<!--<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+</body>
+</html> -->
+<md-dialog aria-label="Neurons and Activation_Functions">
+    <form ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Add perceptron Layer</h2>
+                <span flex></span>
+            </div>
+        </md-toolbar>
+
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column">
+
+                <div class="md-dialog-content" layout="row">
+                    <form>
+                        <md-list>
+                            <md-list-item ng-repeat="Neuron in ActNeuronPara">
+                                <md-input-container>
+                                    <label>Neurons</label>
+                                    <input ng-model="Neuron.no_percp" style="min-width: 60px" required type="number" min="1" max="500">
+                                </md-input-container>
+
+                                <md-input-container>
+                                    <label>Dropout</label>
+                                    <input ng-model="Neuron.Dropout" style="min-width: 60px" required type="number" min="0.0" max="0.7">
+                                </md-input-container>
+                            </md-list-item>
+
+                        </md-list>
+
+                    </form>
+
+
+
+
+
+
+
+                    <!---
+                    <md-input-container>
+                        <label>1st hidden layer</label>
+                        <input ng-model="percp1" style="min-width: 60px" required type="number" min="1" max="500" >
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Activation</label>
+                        <md-select ng-model="act1" style="min-width: 90px; >
+                                ng-change="AppCtrl.modelHasChanged = true">
+                        <md-option ng-repeat="act1 in activationfunc_list" ng-value="act1" ng-disabled="Classifierdisabled">
+                            {{ act1 }}
+                        </md-option>
+                        </md-select>
+
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Dropout</label>
+                        <input ng-model="Dropout1" style="max-width: 100px" required type="number" min="0.0" max="0.7">
+                        </md-select>
+                    </md-input-container>
+
+
+                </div>
+
+                <div class="md-dialog-content" layout="row">
+
+                    <md-input-container>
+                        <label>2nd hidden layer</label>
+                        <input ng-model="percp2" style="min-width: 60px" required type="number" minlength="1" maxlength="500" >
+                    </md-input-container>
+
+                    <md-input-container>
+                    <label>Activation</label>
+                    <md-select ng-model="act2" style="min-width: 90px; >
+                                ng-change="AppCtrl.modelHasChanged = true">
+                        <md-option ng-repeat="act2 in activationfunc_list" ng-value="act2" ng-disabled="Classifierdisabled">
+                            {{ act2 }}
+                        </md-option>
+                    </md-select>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Dropout</label>
+                        <input ng-model="Dropout2" style="max-width: 100px" required type="number" min="0.0" max="0.7">
+                        </md-select>
+                    </md-input-container>
+
+
+                </div>
+
+                <div class="md-dialog-content" layout="row">
+
+                    <md-input-container>
+                        <label>3rd hidden layer</label>
+                        <input ng-model="percp3" style="min-width: 60px" required type="number" min="1" max="500" >
+                    </md-input-container>
+
+                    <md-input-container>
+                    <label>Activation</label>
+                        <md-select ng-model="act3" style="min-width: 90px; >
+                                ng-change="AppCtrl.modelHasChanged = true">
+                            <md-option ng-repeat="act3 in activationfunc_list" ng-value="act3" ng-disabled="Classifierdisabled">
+                                {{ act3 }}
+                            </md-option>
+                        </md-select>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Dropout</label>
+                        <input ng-model="Dropout3" style="max-width: 100px" required type="number" min="0.0" max="0.7">
+                        </md-select>
+                    </md-input-container>
+
+
+                </div>
+
+                <div class="md-dialog-content" layout="row">
+
+                    <md-input-container>
+                        <label>4th hidden layer</label>
+                        <input ng-model="percp4" style="min-width: 60px" required type="number" min="1" max="500" >
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Activation</label>
+                        <md-select ng-model="act4" style="min-width: 90px; >
+                                ng-change="AppCtrl.modelHasChanged = true">
+                            <md-option ng-repeat="act4 in activationfunc_list" ng-value="act4" ng-disabled="Classifierdisabled">
+                                {{ act4 }}
+                            </md-option>
+                        </md-select>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Dropout</label>
+                        <input ng-model="Dropout4" style="max-width: 100px" required type="number" min="0.0" max="0.7">
+                        </md-select>
+                    </md-input-container>
+
+
+                </div>
+
+                <div class="md-dialog-content" layout="row">
+
+                    <md-input-container>
+                        <label>5th hidden layer</label>
+                        <input ng-model="percp5" style="min-width: 60px" required type="number" min="1" max="500" >
+                        </md-select>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Activation</label>
+                        <md-select ng-model="act5" style="min-width: 90px; >
+                                ng-change="AppCtrl.modelHasChanged = true">
+                            <md-option ng-repeat="act5 in activationfunc_list" ng-value="act5" ng-disabled="Classifierdisabled">
+                                {{ act5 }}
+                            </md-option>
+                        </md-select>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Dropout</label>
+                        <input ng-model="Dropout5" style="max-width: 100px" required type="number" min="0.0" max="0.7">
+                        </md-select>
+                    </md-input-container>
+
+
+
+                </div>
+
+                <div class="md-dialog-content" layout="row">
+
+                    <md-input-container>
+                        <label>6th hidden layer</label>
+                        <input ng-model="percp6" style="min-width: 60px" required type="number" min="1" max="500" >
+                        </md-select>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Activation</label>
+                        <md-select ng-model="act6" style="min-width: 90px;" ng-disabled="" >
+                                ng-change="AppCtrl.modelHasChanged = true">
+                            <md-option ng-repeat="act6 in activationfunc_list" ng-value="act6" ng-disabled="Classifierdisabled">
+                                {{ act6 }}
+                            </md-option>
+                        </md-select>
+                    </md-input-container>
+
+                    <md-input-container>
+                        <label>Dropout</label>
+                        <input ng-model="Dropout6" style="max-width: 100px" required type="number" min="0.0" max="0.7">
+                        </md-select>
+                    </md-input-container>
+
+                 --->
+                </div>
+
+            </div>
+        </md-dialog-content>
+        <md-divider></md-divider>
+        <md-dialog-actions layout="row">
+            <span flex></span>
+            <md-button ng-click="answer()" class="md-primary md-raised">
+                Apply
+            </md-button>
+            <md-button ng-click="answer()" class="md-primary md-raised">
+                Cancel
+            </md-button>
+        </md-dialog-actions>
+        </form>
+    </md-dialog>
