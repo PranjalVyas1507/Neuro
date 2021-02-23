@@ -1,5 +1,6 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, ipcMain, screen} = require('electron');
+const nativeImage = require('electron').nativeImage ;
 const path = require('path');
 const { PythonShell } = require('python-shell');
 var fs = require('fs');
@@ -39,7 +40,9 @@ function createWindow () {
       nodeIntegration : false,
       enableRemoteModule : false
     },
-    autoHideMenuBar : true
+    autoHideMenuBar : true,
+    icon : nativeImage.createFromPath(__dirname + "/assets/images/NeuroIcon.png")
+
   });
 
   // and load the index.html of the app.
@@ -63,7 +66,9 @@ function createRegistrationWindow() {
         movable : false,
         minimizable : false,
         maximizable : false,
-        autoHideMenuBar : true
+        autoHideMenuBar : true,
+        icon : nativeImage.createFromPath(__dirname + "/assets/images/NeuroIcon.svg")
+
     }) ;
 
     regWindow.loadFile('assets/html/Registration.html')
@@ -354,8 +359,6 @@ pyscript.on('message',function(message){
         {
            if(message[0].includes("Check Result"))
             {
-                try
-                {
                     if(fs.statSync("result.json").isFile())
                     {
                         output = fs.readFileSync('result.json', 'utf8');
@@ -370,13 +373,6 @@ pyscript.on('message',function(message){
                         console.log("Weights:\n",weights);
                     }
                     storeparams();
-
-                }
-
-                catch(err)
-                {
-                    console.log(err);
-                }
 
             }
             message = message[0].split(":",2);
@@ -393,8 +389,6 @@ pyscript.on('message',function(message){
             code_generated = false ;
             while(code_generated === false)
             {
-                try
-                {
                     if(fs.existsSync('DL_code.py'))
                     {
                         gen_code = fs.readFileSync('DL_code.py', 'utf8');
@@ -402,12 +396,6 @@ pyscript.on('message',function(message){
                         mainWindow.webContents.send("Code",code);
                         code_generated = true ;
                     }
-                }
-                catch (err)
-                {
-                    console.log("WTF");
-                }
-
             }
 
         }
@@ -445,19 +433,11 @@ pyscript.on('close',function(message)
 
 function delete_temp_files()
 {
-    try{
         if(fs.existsSync("DL_code.py")) fs.unlinkSync('DL_code.py');
         if(fs.existsSync("DLengine/path.txt")) fs.unlinkSync('DLengine/path.txt');
         if(fs.existsSync("DLengine/params.json")) fs.unlinkSync('DLengine/params.json');
         if(fs.existsSync("result.json")) fs.unlinkSync('result.json');
         if(fs.existsSync("weights.json")) fs.unlinkSync('weights.json');
-
-    }
-    catch(err)
-    {
-        console.log(err);
-    }
-
 }
 
 function storeparams()
@@ -584,3 +564,7 @@ function storelocal(NNmodel)
         }
     });
 }
+
+process.on("uncaughtException",function(err){
+    console.log(err);
+});
