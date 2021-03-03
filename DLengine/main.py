@@ -9,7 +9,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import RobustScaler
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
 
 import keras
 from keras.models import Sequential
@@ -41,7 +43,8 @@ loss_stats = {
 "y_train_inv": [],
 "y_test_inv": [],
 "y_pred_inv" : [],
-"confusion_matrix" : []
+"confusion_matrix" : [],
+"classification_report" : []
 }
 
 w_n_b = {
@@ -83,6 +86,7 @@ def coder(parameters):
     neurons = parameters['neurons']
     activationfunction = parameters['activation']
     dropouts = parameters['dropouts']
+    target = parameters['target'].strip()
     global file_type
     try:
         code = open('DL_code.py', 'x')
@@ -98,11 +102,11 @@ def coder(parameters):
 
                             #Data Preprocessing
                             if(file_type == "excel"):
-                                py_out.write("\ninput_frame = pd.read_excel("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                py_out.write("\ninput_frame = pd.read_excel("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
                             elif(file_type == "csv"):
-                                py_out.write("\ninput_frame = pd.read_csv("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                py_out.write("\ninput_frame = pd.read_csv("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
                             elif(file_type == "json"):
-                                py_out.write("\ninput_frame = pd.read_json("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                py_out.write("\ninput_frame = pd.read_json("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
 
                             py_out.write("\nX = input_frame.drop(target, axis = 1)\ny = input_frame[target]\ncolumn_list =" +str(parameters['headers']))
                             py_out.write("\nX = X.filter(column_list, axis=1)")
@@ -157,13 +161,13 @@ def coder(parameters):
                             #data_preprocessing
                             py_out.write("def create_dataset(X, y, time_steps=1):\n\tXs, ys = [], []\n\tfor i in range(len(X) - time_steps):\n\t\tv = X.iloc[i:(i + time_steps)].values\n\t\tXs.append(v)\n\t\tys.append(y.iloc[i + time_steps])\n\treturn np.array(Xs), np.array(ys)")
                             if(file_type == "excel"):
-                                py_out.write("\ninput_frame = pd.read_excel("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                py_out.write("\ninput_frame = pd.read_excel("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
                             elif(file_type == "csv"):
-                                py_out.write("\ninput_frame = pd.read_csv("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                py_out.write("\ninput_frame = pd.read_csv("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
                             elif(file_type == "json"):
-                                py_out.write("\ninput_frame = pd.read_json("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                py_out.write("\ninput_frame = pd.read_json("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
                             #py_out.write("\n
-                            py_out.write("\ntarget = " + "\'" +parameters['target'].strip()+ "\'")
+                            py_out.write("\ntarget = " + "\'" +target.strip()+ "\'")
                             py_out.write("\nX = input_frame\ny = input_frame[target]\ncolumn_list =" +str(parameters['headers']))
                             py_out.write("\nX = X.filter(column_list, axis=1)\n") #change this
                             py_out.write("for column in column_list:\n\tif(X[column].dtype == 'object'):\n\t\tX[column] = X[column].astype('category')\n\t\tX[column] = X[column].cat.codes\n")
@@ -236,13 +240,13 @@ def coder(parameters):
 
                             #Data Preprocessing
                             if(file_type == "excel"):
-                                code_string +=("\ninput_frame = pd.read_excel("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                code_string +=("\ninput_frame = pd.read_excel("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
                             elif(file_type == "csv"):
-                                code_string +=("\ninput_frame = pd.read_csv("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                code_string +=("\ninput_frame = pd.read_csv("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
                             elif(file_type == "json"):
-                                code_string +=("\ninput_frame = pd.read_json("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                code_string +=("\ninput_frame = pd.read_json("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
 
-                            #code_string += ("input_frame = pd.read_json(file)\ntarget = \'" +parameters['target'].strip()+"\'")
+                            #code_string += ("input_frame = pd.read_json(file)\ntarget = \'" +target.strip()+"\'")
                             code_string += ("\nX = input_frame.drop(target, axis = 1)\ny = input_frame[target]\ncolumn_list =" +str(parameters['headers']))
                             code_string += ("\nX = X.filter(column_list, axis=1)\n")
                             code_string += ("for column in column_list:\n\tif(X[column].dtype == 'object'):\n\t\tX[column] = X[column].astype('category')\n\t\tX[column] = X[column].cat.codes\nif(y.dtype == 'object'):\n\ty = y.astype('category')\n\ty = y.cat.codes")
@@ -400,11 +404,11 @@ def coder(parameters):
 
                                 #Data Preprocessing
                                 if(file_type == "excel"):
-                                    code_string +=("\ninput_frame = pd.read_excel("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                    code_string +=("\ninput_frame = pd.read_excel("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
                                 elif(file_type == "csv"):
-                                    code_string +=("\ninput_frame = pd.read_csv("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                    code_string +=("\ninput_frame = pd.read_csv("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
                                 elif(file_type == "json"):
-                                    code_string +=("\ninput_frame = pd.read_json("+str(parameters['filename'])+")\ntarget = \"" +parameters['target']+"\"")
+                                    code_string +=("\ninput_frame = pd.read_json("+str(parameters['filename'])+")\ntarget = \"" +target+"\"")
                                     code_string += ("\nX = input_frame\ny = input_frame[target]\ncolumn_list =" +str(parameters['headers']))
                                 code_string += ("\nX = X.filter(column_list, axis=1)")
 
@@ -563,6 +567,7 @@ class Regressor_LSTM(nn.Module):
         return self.out
 
 
+
 def create_dataset(X, y, time_steps=1):
     Xs, ys = [], []
     for i in range(len(X) - time_steps):
@@ -574,6 +579,7 @@ def create_dataset(X, y, time_steps=1):
 def data_preprocessing(file, parameters):
     # Importing the dataset
     #toelectronmain("In data preprocessing")
+    global error_occured
     toelectronmain("Display_Message :Preprocessing data")
     try:
         global input_file
@@ -608,8 +614,9 @@ def data_preprocessing(file, parameters):
 
     except Exception as e:
         toelectronmain("Error Encountered" + e)
-        with open('debug1.json', 'w') as fp:
-            json.dump(str(e), fp)
+        error_occured = True
+        #with open('debug1.json', 'w') as fp:
+            #json.dump(str(e), fp)
     ##print(input_frame.info())
         #column_list = list(self.dataset.columns)
     #input_frame.drop(target,1)
@@ -667,13 +674,18 @@ def data_preprocessing(file, parameters):
             return(X_train, X_test, y_train, y_test)
 
         except Exception as e:
+            error_occured = True
             toelectronmain("Error Encountered:" + e)
             with open('debug.json', 'w') as fp:
                 json.dump(str(e), fp)
 
-    if(parameters['type']=='Classification'):
+    if(parameters['type']=='Classification') or (parameters['type']=='MultiClass'):
         try:
-            toelectronmain("Display_Message :Preparing data for binary classiification")
+            if(parameters['type']=='Classification'):
+                toelectronmain("Display_Message :Preparing data for binary classiification")
+            else:
+                toelectronmain("Display_Message :Preparing data for multiclass classiification")
+
             X = input_frame.drop(target, axis = 1)
             y = input_frame[target]
             #print(input_frame.head())
@@ -712,8 +724,15 @@ def data_preprocessing(file, parameters):
                 y = y.astype('category')
                 y = y.cat.codes
 
+            if(parameters['type'] == 'MultiClass'):
+                encoder = LabelEncoder()
+                encoder.fit(y)
+                y_encoded = encoder.transform(y)
+                y_categorical = keras.utils.to_categorical(y_encoded)
+
+
             toelectronmain("Display_Message : Generating train, validation and test sets")
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = float(parameters['testsplit']), random_state = 2)
+            X_train, X_test, y_train, y_test = train_test_split(X, y_categorical, test_size = float(parameters['testsplit']), random_state = 2)
 
                     #print(X_train)
             sc = StandardScaler()
@@ -726,16 +745,17 @@ def data_preprocessing(file, parameters):
             return(X_train, X_test, y_train, y_test)
 
         except Exception as e:
+            error_occured = True
             toelectronmain("Error Encountered:"+e)
             with open('debug1.json', 'w') as fp:
                 json.dump(str(e), fp)
     #checkforreset()
 
-
 def tf_ann(parameters):
     toelectronmain("Display_Message : Setting up keras for binary classification")
     global loss_stats
     global w_n_b
+    global error_occured
     #print(type(parameters[10]))
     X_train, X_test, y_train, y_test = data_preprocessing('data.json', parameters)
     toelectronmain("Display_Message : Processed data")
@@ -786,7 +806,7 @@ def tf_ann(parameters):
             if(i == 0):
                 #print(neurons[i])
                 classifier.add(Dense(units = int(neurons[i]), kernel_initializer = 'uniform', activation = 'relu', input_dim = X_test.shape[1]))
-
+                classifier.add(Dropout(float(dropouts[i])))
                 #print(i)
                 #print(neurons[i])
             elif(i == layers):
@@ -815,7 +835,8 @@ def tf_ann(parameters):
         cm = confusion_matrix(y_test, y_pred)
 
     except Exception as e:
-             toelectronmain("Error Encountered")
+        error_occured = True
+        toelectronmain("Error Encountered")
     #history = classifier.evaluate(X_test,)
     #checkforreset()
     #with open('predict.json', 'w') as fp:
@@ -831,6 +852,7 @@ def tf_ann(parameters):
         with open('weights.json','w') as fp :
             json.dump(w_n_b,fp)
     except Exception as e:
+        error_occured = True
         toelectronmain("Error Encountered")
         #with open('debug.json', 'w') as fp:
         #    json.dump(str(e), fp)
@@ -843,15 +865,19 @@ def tf_ann(parameters):
         loss_stats["val_accuracy"] = history.history['val_accuracy']
         loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
 
+        toelectronmain("Eror Encountered")
         with open('result.json', 'w') as fp:
             json.dump(loss_stats, fp)
+
         toelectronmain("Final_Message : Check Result")
     except Exception as e:
+        error_occured = True
         toelectronmain("Error Encountered")
     #toelectronmain("Final_Message : Kill Script")
 
 def tf_rnn(parameters):
     #print(X_train.shape,y_train.shape,type(parameters[5]))
+    global error_occured
     try:
         global w_n_b
         toelectronmain("Display_Message : Setting up Keras for Time series analysis")
@@ -937,6 +963,7 @@ def tf_rnn(parameters):
         toelectronmain("Display_Message: Fitting Neural Network onto the training set")
         history = regressor.fit(X_train, y_train, validation_split=float(parameters['validsplit']), epochs=int(parameters['epochs']), batch_size = int(parameters['batch_size']))
     except Exception as e:
+        error_occured = True
         toelectronmain("Error Encountered")
         #with open('debug.json', 'w') as fp:
         #    json.dump(str(e), fp)
@@ -971,15 +998,115 @@ def tf_rnn(parameters):
         loss_stats["y_pred_inv"] = y_transformer.inverse_transform(y_pred).tolist()
         with open('result.json', 'w') as fp:
             json.dump(loss_stats, fp)
+        toelectronmain("Eror Encountered")
         toelectronmain("Final_Message :Check Result")
         #toelectronmain("Final_Message : Kill Script")
 
     except Exception as e:
-        with open('debug1.json', 'w') as fp:
-            json.dump(str(e), fp)
+        error_occured = True
+        toelectronmain("Error Encountered")
+
+
+def tf_multiclass(parameters):
+    toelectronmain("Display_Message : Setting up keras for binary classification")
+    global loss_stats
+    global w_n_b
+    global error_occured
+    #print(type(parameters[10]))
+    X_train, X_test, y_train, y_test = data_preprocessing('data.json', parameters)
+    toelectronmain("Display_Message : Processed data")
+    #print(type(X_train),type(y_train))
+    #checkforreset()
+    try:
+                alpha = float(parameters['learning_rate'])
+                #print(alpha)
+
+                layers = int(parameters['layers'])
+                #print(layers)
+
+                neurons = parameters['neurons']
+                #print(neurons)
+
+                activationfunction = parameters['activation']
+                #print(activationfunction)
+
+                dropouts = parameters['dropouts']
+                #print(droputs)
+
+                if(parameters['optimization']== 'SGD'):
+                    optimizer = keras.optimizers.SGD(learning_rate=alpha)
+
+                elif(parameters['optimization']== 'Adam'):
+                    optimizer = keras.optimizers.Adam(learning_rate=alpha)
+
+                elif(parameters['optimization']== 'Adagrad'):
+                    optimizer = keras.optimizers.Adagrad(learning_rate=alpha)
+
+                elif(parameters['optimization']== 'RMSProp'):
+                    optimizer = keras.optimizers.RMSprop(learning_rate=alpha)
+
+                elif(parameters['optimization']== 'Adamax'):
+                    optimizer = keras.optimizers.Adamax(learning_rate=alpha)
+                #checkforreset()
+                #print(type(layers))
+                toelectronmain("Display_Message : Initialising Neural Network for Classification")
+                # Initialising the ANN
+                classifier = Sequential()
+
+                for i in range(layers+1):
+                    if(i == 0):
+                        classifier.add(Dense(units = int(neurons[i]), activation = 'relu', input_dim = X_test.shape[1]))
+                        classifier.add(Dropout(float(dropouts[i])))
+                    elif(i == layers):
+                        classifier.add(Dense(units = y_test.shape[1], activation = 'relu'))
+
+                    else:
+                        # Adding remaining hidden layers
+                        classifier.add(Dense(units = int(neurons[i]), activation = 'relu'))
+                        classifier.add(Dropout(float(dropouts[i])))
+
+                classifier.compile(optimizer = optimizer, loss = 'categorical_crossentropy', metrics = ['accuracy'])
+
+                toelectronmain("Display_Message: Fitting Neural Network Onto training set")
+                history = classifier.fit(X_train, y_train, batch_size = int(parameters['batch_size']), epochs = int(parameters['epochs']), validation_split=float(parameters['validsplit']))
+
+                toelectronmain("Display_Message : Evaluating neural network on the test set")
+                y_predict = classifier.predict_classes(X_test)
+
+                i=0
+                for layer in classifier.layers:
+                    w_n_b['layers'].append(layer.name)
+                    if(layer.name.find("dropout")==-1):
+                        w_n_b['weights'].append((layer.get_weights()[0].transpose()).tolist())
+                        w_n_b['biases'].append((layer.get_weights()[1].transpose()).tolist())
+                    i= i + 1
+                with open('weights.json','w') as fp :
+                    json.dump(w_n_b,fp)
+
+
+                cm =[[0,0],[0,0]]
+                loss_stats["loss"] = history.history['loss']
+                loss_stats["val_loss"] = history.history['val_loss']
+                loss_stats["accuracy"] = history.history['accuracy']
+                loss_stats["val_accuracy"] = history.history['val_accuracy']
+                loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
+
+                with open('result.json', 'w') as fp:
+                    json.dump(loss_stats, fp)
+                checkoutputfiles()
+                toelectronmain("Final_Message : Check Result")
+
+
+
+    except Exception as e:
+        toelectronmain("Error Encountered")
+        toelectronmain(str(e))
+        error_occured = True
+
 
 
 def pyt_preprocessing(file, parameters):
+    global error_occured
     try:
         #checkforreset()
         toelectronmain("Display_Message : Preprocessing data")
@@ -1057,9 +1184,10 @@ def pyt_preprocessing(file, parameters):
         return(X_train , y_train , X_val, y_val, X_test, y_test)
 
     except Exception as e:
+        error_occured = True
         toelectronmain(e)
-        with open('debug.json', 'w') as fp:
-            json.dump(str(e), fp)
+        #with open('debug.json', 'w') as fp:
+        #    json.dump(str(e), fp)
 
 
 class Dataset(Dataset):
@@ -1090,7 +1218,7 @@ def pyt_ANN(parameters):
     #print(activationfunction)
 
     dropouts = parameters['dropouts']
-
+    global error_occured
     global loss_stats
     global w_n_b
     toelectronmain("Display_Message : Setting up pytorch for Binary Classification")
@@ -1239,6 +1367,7 @@ def pyt_ANN(parameters):
 
         toelectronmain("Display_Message :Generating Confusion Matrix")
         cm = confusion_matrix(y_test_list, y_pred_list)
+        toelectronmain("Eror Encountered")
         #check the data-types and convert lists to numpy arrays
 
         loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
@@ -1259,11 +1388,13 @@ def pyt_ANN(parameters):
             json.dump(loss_stats, fp)
         toelectronmain("Display_Message :Check Result")
     except Exception as e:
+        error_occured = True
         toelectronmain("Error Encountered"+str(e))
         #with open('debug1.json', 'w') as fp:
         #    json.dump(str(e), fp)
 
 def pyt_RNN(parameters):
+    global error_occured
     try:
         toelectronmain("Display_Message: Setting up PyTorch for time series analysis")
         global input_file
@@ -1354,6 +1485,7 @@ def pyt_RNN(parameters):
 
 
     except Exception as e:
+        error_occured = True
         toelectronmain("Error Encounterd : Pytorch LSTM")
     try:
         #y_transformer = RobustScaler()
@@ -1385,6 +1517,7 @@ def pyt_RNN(parameters):
         X_test, y_test = create_dataset(test, y_tst, time_steps)
         X_val, y_val = create_dataset(val, y_val, time_steps)
     except Exception as e:
+        error_occured = True
         with open('debug.json', 'w') as fp:
             json.dump(str(e), fp)
 
@@ -1428,12 +1561,10 @@ def pyt_RNN(parameters):
 
         elif(parameters['optimization']== 'Adamax'):
             optimizer = torch.optim.Adamax(regressor_model.parameters(), lr=alpha, weight_decay=0.00008)
-        with open('model.json', 'w') as fp:
-            json.dump(str(regressor_model.parameters()), fp)
+
     except Exception as e:
+        error_occured = True
         toelectronmain("Error Encountered")
-        with open('debug_hyp.json', 'w') as fp:
-            json.dump(str(e), fp)
 
     #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     try:
@@ -1529,18 +1660,19 @@ def pyt_RNN(parameters):
             json.dump(w_n_b,fp)
         with open('result.json', 'w') as fp:
             json.dump(loss_stats, fp)
+        toelectronmain("Eror Encountered")
         toelectronmain("Display_Message: Check Result")
 
 
     except Exception as e:
         toelectronmain("Error Encountered" + str(e))
-        with open('debug1.json', 'w') as fp:
-            json.dump(str(e), fp)
+        error_occured = True
 
 def find_extensions_headers():
     filepathflag = False
     global input_file
     global file_type
+    global error_occured
     path = os.path.dirname(__file__)
     path = os.path.join(path,'path.txt').replace("\\","/")
     filepath = None
@@ -1557,7 +1689,8 @@ def find_extensions_headers():
                 filepathflag = True
                 f.close()
             except Exception as e:
-                toelectronmain("Error in reading filepath while-if")
+                error_occured = True
+                toelectronmain("Error Encountered")
                 toelectronmain(e)
     os.remove(path)
     try:
@@ -1587,7 +1720,8 @@ def find_extensions_headers():
         headers = list(input_file.columns)
         return headers
     except Exception as e:
-        toelectronmain("Error in reading filepath while-if")
+        error_occured = True
+        toelectronmain("Error Encountered")
         toelectronmain(e)
 
 #def #checkforreset():
@@ -1613,6 +1747,8 @@ def read_parameters():
     paramsflag = True
     path = os.path.dirname(__file__)
     global parameters
+    global error_occured
+
     #toelectronmain(type(path))
     #toelectronmain(os.path.join(path,'params.json'))
     toelectronmain("Display_Message : Waiting for hyperparameter input......")
@@ -1632,6 +1768,7 @@ def read_parameters():
                 paramsflag == False
                 f.close()
             except Exception as e:
+                error_occured = True
                 toelectronmain("Error Encountered")
                 toelectronmain(e)
             os.remove(path)
@@ -1700,30 +1837,37 @@ def checkoutputfiles():
     for a in loss_stats['loss']:
         if(a != a):
             loss_stats['loss'] = []
+            toelectronmain("Eror Encountered")
 
     for a in loss_stats['val_loss']:
         if(a != a):
             loss_stats['val_loss'] = []
+            toelectronmain("Eror Encountered")
 
     for a in loss_stats['accuracy']:
         if(a != a):
             loss_stats['accuracy'] = []
+            toelectronmain("Eror Encountered")
 
     for a in loss_stats['val_accuracy']:
         if(a != a):
             loss_stats['val_accuracy'] = []
+            toelectronmain("Eror Encountered")
 
     for a in loss_stats['y_train_inv']:
         if(a != a):
             loss_stats['y_train_inv'] = []
+            toelectronmain("Eror Encountered")
 
     for a in loss_stats['y_test_inv']:
         if(a != a):
             loss_stats['y_test_inv'] = []
+            toelectronmain("Eror Encountered")
 
     for a in loss_stats['y_pred_inv']:
         if(a != a):
             loss_stats['y_pred_inv'] = []
+            toelectronmain("Eror Encountered")
 
     for a in loss_stats['confusion_matrix']:
         if(a != a):
@@ -1736,6 +1880,8 @@ def main():
     #Return the input features back to the user
     while True:
         try:
+                global error_occured
+                error_occured = False
                 sys.stdout.flush()
                 toelectronmain("Notification : Input_Features__" + str(find_extensions_headers()))
                 lines = read_parameters()
@@ -1744,23 +1890,32 @@ def main():
                     if(lines['type']=='Classification'):
                         tf_ann(lines)
                         #print(lines[5])
-                    if(lines['type']=='Time Series'):
+                    elif(lines['type']=='Time Series'):
                         tf_rnn(lines)
-                #if(lines[0]=='Gluon'):
-                    #if(lines[1]=='Classification'):
-                        #tf_ann(lines)
-                    #if(lines[1]=='Time Series'):
-                        #tf_rnn(lines)
+                    elif(lines['type']=='MultiClass'):
+                        tf_multiclass(lines)
+                    elif(lines['type']=='Text Classification'):
+                        tf_nlp_classify(lines)
+                    elif(lines['type']=='Text Prediction'):
+                        tf_nlp_predict(lines)
+
                 if(lines['framework']=='PyTorch'):
                     if(lines['type']=='Classification'):
                         pyt_ANN(lines)
-                    if(lines['type']=='Time Series'):
+                    elif(lines['type']=='Time Series'):
                         pyt_RNN(lines)
+                    elif(lines['type']=='MultiClass'):
+                        tf_multiclass(lines)
+                    elif(lines['type']=='Text Classification'):
+                        tf_rnn(lines)
+                    elif(lines['type']=='Text Prediction'):
+                        tf_rnn(lines)
+
 
                 checkoutputfiles()
                 toelectronmain("Display_Message : Generating python autocode")
-                coder(lines)
-
+                if(error_occured is False):
+                    coder(lines)
                 toelectronmain("Final_Message : Kill Script")
                 reset()
         except Exception as e:
