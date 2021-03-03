@@ -12,6 +12,7 @@ var init_x = 110 , init_y = 20 ;
 //var input_x = 25 ;
 //var input_y = 20;
 var params = {}; //params1= [];
+var output_layer = 1;
 
 
 //Variables used in 2D rendering
@@ -45,7 +46,7 @@ var chart ;
         //List of Options for the NN Framework
         $scope.strlist_frmwrk = ['Keras', 'PyTorch'];
         //$scope.strlist_ptype = ['Classification' , 'Sequence Model' , 'Generative', 'Segmentation', 'Mapping'];
-        $scope.strlist_ptype = ['Classification' , 'Time Series'] ;
+        $scope.strlist_ptype = ['Classification' , 'Time Series', 'MultiClass'] ;
         $scope.strlist_optype = ['SGD' , 'Adam', 'Adagrad','RMSProp', 'Adamax'];
         $scope.fltlist_layers = ['1','2','3','4','5','6'] ;
 
@@ -183,7 +184,7 @@ var chart ;
              var ip_x = 0, ip_y = canvas_size.canvas_height/2, input_neuron, name = $scope.filename.split("\\") ;
              if(received_params === true)
              {
-                 if($scope.ptype === 'Classification')
+                 if(($scope.ptype === 'Classification')||($scope.ptype === 'MultiClass'))
                  {
                      input_neuron = two.makeCircle(ip_x,ip_y,20);
                      input_neuron.fill = radialGradient ;
@@ -210,7 +211,7 @@ var chart ;
         function addlayer(layers,neurons)
         {
             //console.log(layers);
-            neurons.splice(layers,0,1);             // adding an ouptut layer
+            neurons.splice(layers,0,output_layer);             // adding an ouptut layer
 
 
             /*if(received_params === true)
@@ -219,7 +220,6 @@ var chart ;
                 layers = layers + 1 ;
                 received_params = false ;
             }*/
-
             layers = layers + 1 ;
             two.clear() ;
             var i,j ;
@@ -231,8 +231,7 @@ var chart ;
             //console.log(canvas_size.canvas_width) ;
             //console.log(canvas_size.canvas_height);
 
-
-            if($scope.ptype === 'Classification')
+            if(($scope.ptype === 'Classification')||($scope.ptype == 'MultiClass'))
             {
                 addinputparameters();
                 for(i=0;i<layers;++i)
@@ -241,6 +240,7 @@ var chart ;
                     init_y = 20 ;
                     for(j=0;j<neurons[i];++j)
                     {
+                        console.log($scope.ptype,neurons);
                         //console.log(neurons[i]);
                       /*  if(neurons[i]>22)
                         {
@@ -264,7 +264,7 @@ var chart ;
 
                         if((i === layers-1)&&(received_params === true))
                         {
-                            text =  two.makeText(target, init_x, init_y+40, {size : 14 , family : "Arial"})
+                            text =  two.makeText(target, init_x, init_y+40, {size : 14 , family : "Arial"});
                             text.stroke = 'black';
                             text.fill = 'rgb(255,180,120)';
                         }
@@ -277,7 +277,7 @@ var chart ;
                 layer_index.splice(0,layer_index.length);
                 init_x = 80 ;
                 init_y = 20 ;
-
+                two.update();
                 /*if(header_flag===true)
                 {
                     for(jj=0;jj<$scope.headers.length;++jj)
@@ -678,57 +678,6 @@ var chart ;
 
          function play1()
          {
-             // console.log('play-clicked');
-             $scope.Isplaydisabled = true;
-             //console.log($scope.Isplaydisabled);
-             $scope.Isstopdisabled = false ;
-             $scope.hyperpara_disabled = true ;
-             //console.log(final_headers);
-             $scope.stop_tooltip = 'Stop Neural Network Tuning and Reset Parameters' ;
-             $scope.Isresetdisabled = true ;
-             $scope.progressivebar2 = false;
-             $scope.Upload_btn_disable = true ;
-
-             /*  if(login_counter>2)
-              {
-              $scope.logindialog() ;
-              }*/
-
-             //console.log(final_headers);
-
-             params = {
-                 framework : $scope.frmwrk,
-                 type : $scope.ptype,
-                 batch_size : $scope.int_Batch,
-                 optimization : $scope.optype,
-                 testsplit : $scope.flt_testsplit,
-                 validsplit : $scope.flt_vldsplit,
-                 learning_rate : $scope.flt_LR,
-                 layers : $scope.layer,
-                 neurons : neurons_list,
-                 activation : activation_list,
-                 headers : final_headers,
-                 target : target,
-                 dropouts : droputs,
-                 filename : $scope.filename,
-                 user : $scope.username,
-                 epochs : $scope.int_epoch
-             };
-             /*  params1[0] = params.framework ;
-              params1[1] = params.type ;
-              params1[2] = params.learning_rate ;
-              params1[3] = params.testsplit ;
-              params1[4] = params.Optimizer ;
-              params1[5] = params.batch_size ;
-              params1[6] = params.layers ;
-              params1[7] = params.neurons ;
-              params1[8] = params.activation ;
-              params1[10] = params.headers ;
-              params1[11] = params.target ;
-              params1[12] = params.validsplit ;
-              params1[13] = params.dropouts ;
-              params1[14] = params.filename ; */
-
              if(($scope.int_Batch ===0)||($scope.int_epoch === 0) || ($scope.flt_LR == 0)|| ($scope.flt_testsplit ==0) || ($scope.flt_vldsplit == 0))
              {
                  $mdToast.show($mdToast.simple()
@@ -743,6 +692,57 @@ var chart ;
 
              else
              {
+                 // console.log('play-clicked');
+                 $scope.Isplaydisabled = true;
+                 //console.log($scope.Isplaydisabled);
+                 $scope.Isstopdisabled = false ;
+                 $scope.hyperpara_disabled = true ;
+                 //console.log(final_headers);
+                 $scope.stop_tooltip = 'Back' ;
+                 $scope.Isresetdisabled = true ;
+                 $scope.progressivebar2 = false;
+                 $scope.Upload_btn_disable = true ;
+
+                 /*  if(login_counter>2)
+                  {
+                  $scope.logindialog() ;
+                  }*/
+
+                 //console.log(final_headers);
+
+                 params = {
+                     framework : $scope.frmwrk,
+                     type : $scope.ptype,
+                     batch_size : $scope.int_Batch,
+                     optimization : $scope.optype,
+                     testsplit : $scope.flt_testsplit,
+                     validsplit : $scope.flt_vldsplit,
+                     learning_rate : $scope.flt_LR,
+                     layers : $scope.layer,
+                     neurons : neurons_list,
+                     activation : activation_list,
+                     headers : final_headers,
+                     target : target,
+                     dropouts : droputs,
+                     filename : $scope.filename,
+                     user : $scope.username,
+                     epochs : $scope.int_epoch
+                 };
+                 /*  params1[0] = params.framework ;
+                  params1[1] = params.type ;
+                  params1[2] = params.learning_rate ;
+                  params1[3] = params.testsplit ;
+                  params1[4] = params.Optimizer ;
+                  params1[5] = params.batch_size ;
+                  params1[6] = params.layers ;
+                  params1[7] = params.neurons ;
+                  params1[8] = params.activation ;
+                  params1[10] = params.headers ;
+                  params1[11] = params.target ;
+                  params1[12] = params.validsplit ;
+                  params1[13] = params.dropouts ;
+                  params1[14] = params.filename ; */
+
                  window.api.send("paramstoMain",params);
                  target = null ;
                  $scope.showplay = false ;
@@ -858,7 +858,7 @@ var chart ;
                 $scope.progressivebar2 = false ;
                 $scope.headers.splice(0,$scope.headers.length);
 
-                $scope.play_tooltip = "Select Input Parameters" ;
+                $scope.play_tooltip = "Start Training the Neural Net" ;
                 //    console.log("Should add headers to the renderer now");
                 //                            header_flag = true ;
                 //            addlayer(Number($scope.layer),neurons_list);
@@ -1058,7 +1058,7 @@ var chart ;
          // Excel Report for previous records
          var wb = XLSX.utils.book_new() ;
          wb.Props = {
-             Title : $scope.NNmodels['file'+(index+1)].fliename,
+             Title : $scope.NNmodels[index].fliename,
              Subject : 'Weights & Biases sheets',
              Author : 'Neuro' ,
              CreatedDate : new Date(Date.now())
@@ -1067,28 +1067,28 @@ var chart ;
 
 
          Filename = {
-            filename :  $scope.NNmodels['file'+(index+1)].fliename
+            filename :  $scope.NNmodels[index].fliename
         };
 
          parameters = {
-           Optimizer : $scope.NNmodels['file'+(index+1)].Optimizer,
-           layers : $scope.NNmodels['file'+(index+1)].layers,
-           neurons : $scope.NNmodels['file'+(index+1)].neurons.toString(),
-           test_split : $scope.NNmodels['file'+(index+1)].test_split,
-           vald_split : $scope.NNmodels['file'+(index+1)].validation_split,
-           Batch_Size : $scope.NNmodels['file'+(index+1)].Batch_size,
-           EPOCH : $scope.NNmodels['file'+(index+1)].epochs,
-           learning_rate : $scope.NNmodels['file'+(index+1)].learning_rate
+           Optimizer : $scope.NNmodels[index].Optimizer,
+           layers : $scope.NNmodels[index].layers,
+           neurons : $scope.NNmodels[index].neurons.toString(),
+           test_split : $scope.NNmodels[index].test_split,
+           vald_split : $scope.NNmodels[index].validation_split,
+           Batch_Size : $scope.NNmodels[index].Batch_size,
+           EPOCH : $scope.NNmodels[index].epochs,
+           learning_rate : $scope.NNmodels[index].learning_rate
          };
 
          data = {
-             date : $scope.NNmodels['file'+(index+1)].date,
-             Framework : $scope.NNmodels['file'+(index+1)].framework,
-             Type : $scope.NNmodels['file'+(index+1)].ptype
+             date : $scope.NNmodels[index].date,
+             Framework : $scope.NNmodels[index].framework,
+             Type : $scope.NNmodels[index].ptype
 
          };
 
-         layersname =  $scope.NNmodels['file'+(index+1)].layers_name ;
+         layersname =  $scope.NNmodels[index].layers_name ;
 
 
 
@@ -1104,9 +1104,9 @@ var chart ;
             var b_char = "B", b_num = 13, b_pos = b_char + b_num ;
             var width_aoa = [[]] ;
 
-            w = $scope.NNmodels['file'+(index+1)].weights ;
+            w = $scope.NNmodels[index].weights ;
             // console.log(w[counter]);
-            b = $scope.NNmodels['file'+(index+1)].biases ;
+            b = $scope.NNmodels[index].biases ;
 
            /* XLSX.utils.sheet_add_aoa(parametersWB,[
                 "SheetJS".split(""),
@@ -1481,8 +1481,8 @@ var chart ;
                 console.log("Chart Not Undefined");
                 chart.destroy();
             }
-            $scope.progressivebar2 = true
-            var response = resultjson
+            $scope.progressivebar2 = true;
+            var response = resultjson;
             var dataset_len ;
             console.log(response);
             var loss = response.loss ;
@@ -1509,7 +1509,7 @@ var chart ;
             };
             $scope.graph_datasets.push(loss) ;
             $scope.graph_datasets.push(val_loss);
-            if($scope.ptype==='Classification')
+            if(($scope.ptype==='Classification')||($scope.ptype==='MultiClass'))
             {
                 var accuracy = response.accuracy ;
                 var val_accuracy = response.val_accuracy ;
@@ -1542,7 +1542,7 @@ var chart ;
                 $scope.cm = response.confusion_matrix ;
                 confusionmatrix_builder($('#Prediction-Chart'),$scope.cm);
             }
-            else
+            else if($scope.ptype==='Time Series')
             {
                 var trainset = response.y_train_inv[0] ;
                 var testset_1 = response.y_test_inv[0] ;
@@ -1646,7 +1646,15 @@ var chart ;
                    //  console.log("History if");
                      $scope.images[i] = 'assets/images/timeseries.svg' ;
                  }
-                 // console.log($scope.images[i]);
+                 else if($scope.NNmodels[i].ptype =='MultiClass')
+                 {
+                     //  console.log("History if");
+                     $scope.images[i] = 'assets/images/Classify.svg' ;
+                 }
+                 else if($scope.NNmodels[i].ptype =='Text Classification')
+                 {
+                     $scope.images[i] = 'assets/images/nlp.svg' ;
+                 }
                  $scope.NNmodels[i].date = new Date($scope.NNmodels[i].date).toString();
              }
          });
@@ -1668,7 +1676,7 @@ var chart ;
          {
             var canvas_width , canvas_height ;
 
-            if($scope.ptype === 'Classification')
+            if(($scope.ptype === 'Classification')||($scope.ptype === 'MultiClass'))
             {
                 max_neuron = Math.max.apply(Math,n);
                 //console.log(max_neuron);
