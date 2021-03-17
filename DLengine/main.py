@@ -13,6 +13,9 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 
+
+
+import tensorflow as tf
 import keras
 from keras.models import Sequential
 from keras.layers import Dense
@@ -30,10 +33,22 @@ from keras.layers import Dropout
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, random_split, WeightedRandomSampler
 from torch.autograd import Variable
 
 from statistics import  mean
+
+
+
+#bert import
+import bert
+from bert import BertModelLayer
+from bert.loader import StockBertConfig, map_stock_config_to_params, load_stock_weights
+from bert.tokenization.bert_tokenization import FullTokenizer
+
+
+import transformers
+from transformers import BertModel, BertTokenizer, AdamW, get_linear_schedule_with_warmup
 
 loss_stats = {
 "loss": [],
@@ -566,7 +581,24 @@ class Regressor_LSTM(nn.Module):
 
         return self.out
 
+def tf_text_classifier(max_seq_len, bert_ckpt_file):
 
+  input_ids = keras.layers.Input(shape=(max_seq_len, ), dtype='int32', name="input_ids")
+  bert_output = bert(input_ids)
+
+
+  cls_out = keras.layers.Lambda(lambda seq:seq[:,0,:])(bert_output)
+  cls_out = keras.layers.Dropout(0.05)(cls_out)
+  cls_out = keras.layers.Dense(units=786,activation = 'tanh')(cls_out)
+  cls_out = keras.layers.Dropout(0.05)(cls_out)
+  cls =keras.layers.Dense(units=len(classes), activation='softmax')(cls_out)
+
+  model = keras.Model(inputs= input_ids, outputs = cls)
+  model.build(input_shape=(None, max_seq_len))
+
+  load_stock_weights(bert, bert_ckpt_file)
+
+  return model
 
 def create_dataset(X, y, time_steps=1):
     Xs, ys = [], []
@@ -586,15 +618,15 @@ def data_preprocessing(file, parameters):
         input_frame = input_file.copy()
         #toelectronmain("input_file")
         #toelectronmain(input_file)
-        toelectronmain(input_frame)
+        #toelectronmain(input_frame)
 
         target = parameters['target'].strip()
-        toelectronmain('targets')
-        toelectronmain(target)
+        #toelectronmain('targets')
+        #toelectronmain(target)
 
 
         if(type(parameters['headers'])==str):
-            toelectronmain('parameters_headers is a string')
+            #toelectronmain('parameters_headers is a string')
             temp = parameters['headers']
             parameters['headers'] = list()
             parameters['headers'].append(temp)
@@ -747,8 +779,8 @@ def data_preprocessing(file, parameters):
         except Exception as e:
             error_occured = True
             toelectronmain("Error Encountered:"+e)
-            with open('debug1.json', 'w') as fp:
-                json.dump(str(e), fp)
+            #with open('debug1.json', 'w') as fp:
+                #json.dump(str(e), fp)
     #checkforreset()
 
 def tf_ann(parameters):
@@ -1105,6 +1137,73 @@ def tf_multiclass(parameters):
 
 
 
+def tf_nlp_classify(lines):
+    try:
+        alpha = float(parameters['learning_rate'])
+        #print(alpha)
+        activationfunction = parameters['activation']
+        #print(activationfunction)
+
+        #print(droputs)
+
+        if(parameters['optimization']== 'SGD'):
+            optimizer = keras.optimizers.SGD(learning_rate=alpha)
+
+        elif(parameters['optimization']== 'Adam'):
+            optimizer = keras.optimizers.Adam(learning_rate=alpha)
+
+        elif(parameters['optimization']== 'Adagrad'):
+            optimizer = keras.optimizers.Adagrad(learning_rate=alpha)
+
+        elif(parameters['optimization']== 'RMSProp'):
+            optimizer = keras.optimizers.RMSprop(learning_rate=alpha)
+
+        elif(parameters['optimization']== 'Adamax'):
+            optimizer = keras.optimizers.Adamax(learning_rate=alpha)
+
+        global error_occured
+        global input_file
+        input_frame = input_file.copy()
+        bert_model_name="uncased_L-12_H-768_A-12"
+        bert_ckpt_dir = os.path.join("model/", bert_model_name)
+        bert_ckpt_file = os.path.join(bert_ckpt_dir, "bert_model.ckpt")
+        bert_config_file = os.path.join(bert_ckpt_dir, "bert_config.json")
+
+        tokenizer = FullTokenizer(vocab_file=os.path.join(bert_ckpt_dir,"vocab.txt"))
+
+        with tf.io.gfile.GFile(bert_config_file,mode='r') as reader:
+            bc = StockBertConfig.from_json_string(reader.read())
+            bert_params = map_stock_config_to_params(bc)
+            bert_params.adapter_size = None
+            bert = BertModelLayer.from_params(bert_params, name="bert")
+
+        test_size = int(len(input_file) * float(parameters['testsplit']))
+        train_size = len(input_file) - test_size
+        train, test = input_file.iloc[0:train_size], input_file.iloc[train_size:len(input_file)]
+
+        classes = train.label.unique().tolist()
+        data = DataCleansing(train, test, tokenizer, classes, max_seq_len=128)
+        model = tf_text_classifier(data.max_seq_len, bert_ckpt_file)
+
+        model.compile(optimizer= optimizer, loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+        #parameters['optimization'], parameters['learning_rate']
+
+        history = model.fit(x=data.train_x, y=data.train_y, validation_split=float(parameters['validsplit']), batch_size=int(parameters['batch_size']), epochs=int(parameters['epochs']))  
+        #, parameters['epochs'], parameters['batch_size']
+
+    except Exception as e:
+        toelectronmain("Error Encountered")
+        toelectronmain(str(e))
+        error_occured = True
+
+
+def tf_nlp_predict(lines):
+    try:
+        pass
+    except Exception as e:
+        raise
+
+
 def pyt_preprocessing(file, parameters):
     global error_occured
     try:
@@ -1367,7 +1466,7 @@ def pyt_ANN(parameters):
 
         toelectronmain("Display_Message :Generating Confusion Matrix")
         cm = confusion_matrix(y_test_list, y_pred_list)
-        toelectronmain("Eror Encountered")
+        #toelectronmain("Eror Encountered")
         #check the data-types and convert lists to numpy arrays
 
         loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
@@ -1668,6 +1767,200 @@ def pyt_RNN(parameters):
         toelectronmain("Error Encountered" + str(e))
         error_occured = True
 
+
+def pyt_multiclass(parameters):
+    try:
+        target = parameters['target'].strip()
+        alpha = float(parameters['learning_rate'])
+        #print(alpha)
+
+        layers_1 = int(parameters['layers'])
+        #print(layers)
+
+        neurons = parameters['neurons']
+        #print(neurons)
+
+        activationfunction = parameters['activation']
+        #print(activationfunction)
+
+        dropouts = parameters['dropouts']
+        global error_occured
+        global loss_stats
+        global w_n_b
+        toelectronmain("Display_Message : Setting up pytorch for Binary Classification")
+        X_train , y_train , X_val, y_val, X_test, y_test = pyt_preprocessing('data.json', parameters)
+        toelectronmain("Display_Message :Prepared Data for Deep Learning")
+
+        EPOCHS = int(parameters['epochs'])
+        BATCH_SIZE = int(parameters['batch_size'])
+        NUM_FEATURES = len(X_train.columns)
+
+        X_train = X_train.astype(np.float32)
+        y_train = y_train.astype(np.float32)
+        X_val = X_val.astype(np.float32)
+        y_val = y_val.astype(np.float32)
+        X_test = X_test.astype(np.float32)
+        y_test = y_test.astype(np.float32)
+
+        train_dataset = Dataset(torch.from_numpy(X_train).float(), torch.from_numpy(y_train).long())
+        val_dataset = Dataset(torch.from_numpy(X_val).float(), torch.from_numpy(y_val).long())
+        test_dataset = Dataset(torch.from_numpy(X_test).float(), torch.from_numpy(y_test).long())
+
+        train_loader = DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+        val_loader = DataLoader(dataset=val_dataset, batch_size=BATCH_SIZE)
+        test_loader = DataLoader(dataset=test_dataset, batch_size=1)
+
+        layers = []
+        layers.append(nn.Linear(X_train.shape[1],int(neurons[0]),bias=True))
+        #layers.append(nn.ReLU())
+        toelectronmain("Display_Message : Initializing Neural Network for Binary classification")
+        #checkforreset()
+        for i in range(layers_1):
+            #if(i == 0):
+            if(i == layers_1-1):
+                layers.append(nn.Linear(int(neurons[i]),1,bias=True))
+                layers.append(nn.LogSoftmax())
+            else:
+                layers.append(nn.Linear(int(neurons[i]),int(neurons[i+1]),bias=True))
+                #layers.append(nn.ReLU())
+                layers.append(nn.Dropout(float(dropouts[i])))
+        model = nn.Sequential(*layers)
+
+        layers.clear()
+
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        loss_func = nn.CrossEntropyLoss()
+        #loss_func = nn.BCEWithLogitsLoss()
+            #loss_func = nn.MSELoss()
+            #learning_rate = 0.0015
+        #checkforreset()
+        if(parameters['optimization']== 'SGD'):
+            optimizer = torch.optim.SGD(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+        elif(parameters['optimization']== 'Adam'):
+            optimizer = torch.optim.Adam(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+        elif(parameters['optimization']== 'RMSProp'):
+            optimizer = torch.optim.RMSprop(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+        elif(parameters['optimization']== 'Adagrad'):
+            optimizer = torch.optim.Adagrad(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+        elif(parameters['optimization']== 'Adamax'):
+            optimizer = torch.optim.Adamax(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+
+        #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        toelectronmain("Display_Message :Training Neural Network")
+
+
+        model.train()
+        y_pred = []
+        y_actual = []
+        #checkforreset()
+        for e in range(EPOCHS):
+            train_epoch_loss = 0
+            val_epoch_loss = 0
+            train_epoch_acc = 0
+            val_epoch_acc = 0
+
+            model.train()
+            for X_train_batch, y_train_batch in train_loader:
+                X_train_batch, y_train_batch = X_train_batch.to(device), y_train_batch.to(device)
+                y_train_pred = model(X_train_batch)
+                optimizer.zero_grad()
+                #print(y_train_batch.shape)
+                #print(y_train_pred.shape)
+                #y_actual.append(y_train_batch.unsqueeze(1))
+                train_loss = loss_func(y_train_pred, y_train_batch)
+                train_loss.backward()
+                optimizer.step()
+                #print("y_train_pred: "+(str(y_train_pred)))
+                y_pred_softmax = torch.log_softmax(y_train_pred,dim = 1)
+                #print("y_pred_softmax: "+(str(y_pred_softmax)))
+                #y_pred_tag = (y_train_pred > 0.5).float()
+                _, y_pred_tag = torch.max(y_pred_softmax, dim = 1)
+                correct_pred = (y_pred_tag == y_train_batch).float()
+                acc = correct_pred.sum()/len(correct_pred)
+                train_epoch_loss += train_loss.item()
+                train_epoch_acc += acc.item()
+            print(train_epoch_acc/len(train_loader))
+            print(train_epoch_loss/len(train_loader))
+            #print
+
+            model.eval()
+
+            with torch.no_grad():
+              for X_val_batch, y_val_batch in val_loader:
+                X_val_batch, y_val_batch = X_val_batch.to(device), y_val_batch.to(device)
+                y_val_pred = model(X_val_batch)
+                val_loss = loss_func(y_val_pred, y_val_batch)
+                y_pred_softmax = torch.log_softmax(y_val_pred,dim = 1)
+                _, y_pred_tag = torch.max(y_pred_softmax, dim = 1)
+                correct_pred = (y_pred_tag == y_val_batch).float()
+                acc = correct_pred.sum()/len(correct_pred)
+                val_epoch_loss += train_loss.item()
+                val_epoch_acc += acc.item()
+            print(val_epoch_acc/len(val_loader))
+            print(val_epoch_loss/len(val_loader))
+
+
+        y_pred_list = []
+        y_test_list = []
+
+        with torch.no_grad():
+            for X_batch, y_batch in test_loader:
+                X_batch = X_batch.to(device)
+                y_batch = y_batch.to(device)
+                y_pred = model(X_batch)
+                y_pred_softmax = torch.log_softmax(y_pred,dim = 1)
+                _, y_pred_tag = torch.max(y_pred_softmax, dim = 1)
+                y_pred_list.append(y_pred_tag.cpu().numpy())
+                y_test_list.append(y_batch)
+        y_pred_list = [ a.squeeze().tolist() for a in y_pred_list  ]
+        y_test_list = [ a.squeeze().tolist() for a in y_test_list  ]
+
+
+        cm = confusion_matrix(y_test, y_pred_list)
+        #print(cm)
+        #check the data-types and convert lists to numpy arrays
+
+        loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
+
+        model_wnb = model.state_dict()
+        #checkforreset()
+        for i in range(len(model)):
+            w_n_b['layers'].append(str(model[i]))
+            if(str(model[i]).find("Linear")!=-1):
+                str1 = str(i) + ".weight"
+                w_n_b['weights'].append(model_wnb[str1].tolist())
+                str1 = str(i) + ".bias"
+                w_n_b['biases'].append(model_wnb[str1].tolist())
+
+        with open('weights.json','w') as fp :
+            json.dump(w_n_b,fp)
+        with open('result.json', 'w') as fp:
+            json.dump(loss_stats, fp)
+        toelectronmain("Display_Message :Check Result")
+
+    except Exception as e:
+        #raise
+        error_occured = True
+        toelectronmain("Error Encountered"+str(e))
+        #with open('debug1.json', 'w') as fp:
+        #    json.dump(str(e), fp)
+
+        #print(parameters[0],parameters[1])
+
+
+
+def pyt_textclassify(parameters):
+    pass
+
+def pyt_textpredict(parameters):
+    pass
+
+
 def find_extensions_headers():
     filepathflag = False
     global input_file
@@ -1905,11 +2198,11 @@ def main():
                     elif(lines['type']=='Time Series'):
                         pyt_RNN(lines)
                     elif(lines['type']=='MultiClass'):
-                        tf_multiclass(lines)
+                        pyt_multiclass(lines)
                     elif(lines['type']=='Text Classification'):
-                        tf_rnn(lines)
+                        pyt_textclassify(lines)
                     elif(lines['type']=='Text Prediction'):
-                        tf_rnn(lines)
+                        pyt_textpredict(lines)
 
 
                 checkoutputfiles()
