@@ -581,6 +581,80 @@ class Regressor_LSTM(nn.Module):
 
         return self.out
 
+
+class DataCleansing:
+  DATA_COLUMN = 'email'     #parameters['headers']
+  LABEL_COLUMN = 'label'    #target = parameters['target']
+
+  def __init__(self, train, test, tokenizer : FullTokenizer, classes, max_seq_len = 125):
+    self.tokenizer = tokenizer
+    self.max_seq_len = 0
+    self.classes = classes
+
+
+    train, test = map(lambda df: df.reindex(df[DataCleansing.DATA_COLUMN].str.len().sort_values().index),[train , test])
+    ((self.train_x, self.train_y), (self.test_x, self.test_y)) = map(self.prepare_data, [train, test])
+
+    #print("max seq_len", self.max_seq_len)
+    self.max_seq_len = min(self.max_seq_len, max_seq_len)
+    self.train_x, self.test_x = map(self.pad, [self.train_x, self.test_x])
+
+
+  def prepare_data(self, df):
+    x,y = [], []
+
+    for _, row in df.iterrows():
+      text, label = row[DataCleansing.DATA_COLUMN], row[DataCleansing.LABEL_COLUMN]
+      tokens = self.tokenizer.tokenize(str(text))
+      tokens =  ["[CLS]"] + tokens + ["[SEP]"]
+      token_ids = self.tokenizer.convert_tokens_to_ids(tokens)
+      self.max_seq_len = max(self.max_seq_len, len(token_ids))
+      x.append(token_ids)
+      y.append(self.classes.index(label))
+
+    return np.array(x), np.array(y)
+
+  def pad(self, ids):
+    x= []
+    for input_ids in ids:
+      input_ids = input_ids[:min(len(input_ids), self.max_seq_len - 2)]
+      input_ids = input_ids + [0] * (self.max_seq_len - len(input_ids))
+      x.append(np.array(input_ids))
+
+    return np.array(x)
+
+
+
+class TextClassificationDataset(Dataset):
+  def __init__(self, data, target, tokenizer, max_len):
+    self.data = data
+    self.target = target
+    self.tokenizer = tokenizer
+    self.max_len = max_len
+    #print(target.dtype)
+
+  def __len__(self):
+    return len(self.data)
+
+  def __getitem__(self, items):
+    data = str(self.data[items])
+    target = self.target[items]
+    encoding = self.tokenizer.encode_plus(data, max_length=self.max_len, add_special_tokens=True, return_token_type_ids=False, pad_to_max_length=True, return_attention_mask=True, return_tensors='pt')
+
+    return {
+        #'text' : data,
+        'input_ids' : encoding['input_ids'].flatten(),
+        'attention_masks' : encoding['attention_mask'].flatten(),
+        'targets' : torch.tensor(target, dtype = torch.long)
+     }
+
+def create_dataset(df, tokenizer, max_len, batch_size):
+    dataset = TextClassificationDataset(data= df[headers].to_numpy(),target = df[target].to_numpy(),tokenizer = tokenizer, max_len = max_len)
+    return DataLoader(dataset, batch_size=batch_size, num_workers=0)# parameters['batch_size']
+
+
+
+
 def tf_text_classifier(max_seq_len, bert_ckpt_file):
 
   input_ids = keras.layers.Input(shape=(max_seq_len, ), dtype='int32', name="input_ids")
@@ -897,7 +971,7 @@ def tf_ann(parameters):
         loss_stats["val_accuracy"] = history.history['val_accuracy']
         loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
 
-        toelectronmain("Eror Encountered")
+        toelectronmain("Error Encountered")
         with open('result.json', 'w') as fp:
             json.dump(loss_stats, fp)
 
@@ -1030,7 +1104,7 @@ def tf_rnn(parameters):
         loss_stats["y_pred_inv"] = y_transformer.inverse_transform(y_pred).tolist()
         with open('result.json', 'w') as fp:
             json.dump(loss_stats, fp)
-        toelectronmain("Eror Encountered")
+        toelectronmain("Error Encountered")
         toelectronmain("Final_Message :Check Result")
         #toelectronmain("Final_Message : Kill Script")
 
@@ -1103,7 +1177,8 @@ def tf_multiclass(parameters):
                 history = classifier.fit(X_train, y_train, batch_size = int(parameters['batch_size']), epochs = int(parameters['epochs']), validation_split=float(parameters['validsplit']))
 
                 toelectronmain("Display_Message : Evaluating neural network on the test set")
-                y_predict = classifier.predict_classes(X_test)
+                y_predict = np.argmax(classifier.predict(X_test),axis=1)
+                y_actual = np.argmax(y_test,axis=1)
 
                 i=0
                 for layer in classifier.layers:
@@ -1116,7 +1191,7 @@ def tf_multiclass(parameters):
                     json.dump(w_n_b,fp)
 
 
-                cm =[[0,0],[0,0]]
+                cm =confusion_matrix(y_actual,y_predict)
                 loss_stats["loss"] = history.history['loss']
                 loss_stats["val_loss"] = history.history['val_loss']
                 loss_stats["accuracy"] = history.history['accuracy']
@@ -1139,6 +1214,7 @@ def tf_multiclass(parameters):
 
 def tf_nlp_classify(lines):
     try:
+        global loss_stats
         alpha = float(parameters['learning_rate'])
         #print(alpha)
         activationfunction = parameters['activation']
@@ -1188,8 +1264,23 @@ def tf_nlp_classify(lines):
         model.compile(optimizer= optimizer, loss = keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
         #parameters['optimization'], parameters['learning_rate']
 
-        history = model.fit(x=data.train_x, y=data.train_y, validation_split=float(parameters['validsplit']), batch_size=int(parameters['batch_size']), epochs=int(parameters['epochs']))  
+        history = model.fit(x=data.train_x, y=data.train_y, validation_split=float(parameters['validsplit']), batch_size=int(parameters['batch_size']), epochs=int(parameters['epochs']))
         #, parameters['epochs'], parameters['batch_size']
+
+        pred_y = model.predict(data.test_x)
+        y_pred = np.argmax(y_pred,axis=-1)
+        cm = confusion_matrix(data.test_y, y_pred)
+
+        loss_stats["loss"] = history.history['loss']
+        loss_stats["val_loss"] = history.history['val_loss']
+        loss_stats["accuracy"] = history.history['accuracy']
+        loss_stats["val_accuracy"] = history.history['val_accuracy']
+        loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
+
+        with open('result.json', 'w') as fp:
+            json.dump(loss_stats, fp)
+            checkoutputfiles()
+            toelectronmain("Final_Message : Check Result")
 
     except Exception as e:
         toelectronmain("Error Encountered")
@@ -1466,7 +1557,7 @@ def pyt_ANN(parameters):
 
         toelectronmain("Display_Message :Generating Confusion Matrix")
         cm = confusion_matrix(y_test_list, y_pred_list)
-        #toelectronmain("Eror Encountered")
+        #toelectronmain("Error Encountered")
         #check the data-types and convert lists to numpy arrays
 
         loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
@@ -1759,7 +1850,7 @@ def pyt_RNN(parameters):
             json.dump(w_n_b,fp)
         with open('result.json', 'w') as fp:
             json.dump(loss_stats, fp)
-        toelectronmain("Eror Encountered")
+        toelectronmain("Error Encountered")
         toelectronmain("Display_Message: Check Result")
 
 
@@ -1955,7 +2046,154 @@ def pyt_multiclass(parameters):
 
 
 def pyt_textclassify(parameters):
-    pass
+    global error_occured
+    global input_file
+    try:
+
+        target = parameters['target'].strip()
+        alpha = float(parameters['learning_rate'])
+
+        df = input_file
+        df.fillna(0)
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        PRE_TRAINED_MODEL_NAME = 'bert-base-cased'
+        tokenizer  = BertTokenizer.from_pretrained(PRE_TRAINED_MODEL_NAME)
+
+        le = LabelEncoder()
+        df[parameters['headers']] = le.fit_transform(df[parameters['headers']])
+
+        trainval, test = train_test_split(df,test_size=float(parameters['testsplit']), random_state = 42)  #
+        train, val = train_test_split(trainval,test_size=float(parameters['validsplit']), random_state = 42) #
+
+        train_dataset = create_dataset(train, tokenizer,128 , int(parameters['batch_size']) )
+        val_dataset = create_dataset(val, tokenizer, 128, int(parameters['batch_size']))
+        test_dataset = create_dataset(test, tokenizer, 128, 1)
+
+        class TextClassificationModel(nn.Module):
+            def __init__(self, num_classes):
+                super(TextClassificationModel, self).__init__()
+                self.bert = BertModel.from_pretrained(PRE_TRAINED_MODEL_NAME, return_dict = False)
+                self.drop = nn.Dropout(p=0.3)
+                self.out = nn.Linear(self.bert.config.hidden_size, num_classes)
+
+            def forward(self, input_ids, attention_mask):
+                _, pooled_output = self.bert(
+                input_ids=input_ids,
+                attention_mask=attention_mask
+                )
+                output = self.drop(pooled_output)
+                return self.out(output)
+
+        num_classes = len(df[target].unique())
+        model = TextClassificationModel(num_classes)
+        model = model.to(device)
+
+        EPOCHS = int(parameters['epochs'])
+
+
+        if(parameters['optimization']== 'SGD'):
+            optimizer = torch.optim.SGD(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+        elif(parameters['optimization']== 'Adam'):
+            optimizer = torch.optim.Adam(model.parameters(), lr=alpha, weight_decay=0.00008)
+        elif(parameters['optimization']== 'RMSProp'):
+            optimizer = torch.optim.RMSprop(model.parameters(), lr=alpha, weight_decay=0.00008)
+        elif(parameters['optimization']== 'Adagrad'):
+            optimizer = torch.optim.Adagrad(model.parameters(), lr=alpha, weight_decay=0.00008)
+        elif(parameters['optimization']== 'Adamax'):
+            optimizer = torch.optim.Adamax(model.parameters(), lr=alpha, weight_decay=0.00008)
+        #parameters['optimization'] , parameters['learning_rate']
+        total_steps = len(train_dataset) * EPOCHS
+        scheduler = get_linear_schedule_with_warmup(optimizer,num_warmup_steps=0,num_training_steps=total_steps)
+
+        loss_fn  = nn.CrossEntropyLoss().to(device)
+
+        model.train()
+
+
+        for e in range(EPOCHS):
+            losses = []
+            correct_prediction = 0
+            val_losses = []
+            val_correct_prediction = 0
+
+            for d in train_dataset:
+                input_ids = d['input_ids'].to(device)
+                attention_masks = d['attention_masks'].to(device)
+                targets = d["targets"].to(device)
+
+                outputs = model(input_ids,attention_masks)
+
+                _, preds = torch.max(outputs, dim=1)
+                loss = loss_fn(outputs, targets)
+
+                correct_prediction += torch.sum(preds == targets)
+                losses.append(loss.item())
+
+                loss.backward()
+                nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+                optimizer.step()
+                scheduler.step()
+                optimizer.zero_grad()
+
+            #print(correct_prediction.double() /  len(train), np.mean(losses))
+
+
+            model.eval()
+            with torch.no_grad():
+
+                for d in val_dataset:
+                    input_ids = d["input_ids"].to(device)
+                    attention_mask = d["attention_masks"].to(device)
+                    targets = d["targets"].to(device)
+
+                    outputs = model(input_ids=input_ids,attention_mask=attention_mask)
+                    _, preds = torch.max(outputs, dim=1)
+
+                    loss = loss_fn(outputs, targets)
+
+                    val_correct_prediction += torch.sum(preds == targets)
+                    val_losses.append(loss.item())
+
+                #print(val_correct_prediction.double() / len(val), np.mean(val_losses))
+                loss_stats["loss"].append(np.mean(losses))
+                loss_stats["val_loss"].append(np.mean(val_losses))
+
+                loss_stats["accuracy"].append(correct_prediction.double()/len(train))
+                loss_stats["val_accuracy"].append(val_correct_prediction.double() / len(val))
+
+
+            model.eval()
+            y_pred_list = []
+            y_test_list = []
+
+
+            with torch.no_grad():
+                for d in test_dataset:
+                    input_ids = d["input_ids"].to(device)
+                    attention_mask = d["attention_masks"].to(device)
+                    targets = d["targets"].to(device)
+
+                    outputs = model(input_ids=input_ids,attention_mask=attention_mask)
+                    _, preds = torch.max(outputs, dim=1)
+
+                    y_pred_list.append(preds)
+                    y_test_list.append(targets)
+
+
+                y_pred_list = [ a.squeeze().tolist() for a in y_pred_list  ]
+                y_test_list = [ a.squeeze().tolist() for a in y_test_list  ]
+
+                cm = confusion_matrix(y_test_list, y_pred_list)
+                loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
+                #print(cm)
+
+    except Exception as e:
+        #toelectronmain(e)
+        toelectronmain("Error Encountered" + str(e))
+        error_occured = True
+
 
 def pyt_textpredict(parameters):
     pass
@@ -2130,42 +2368,42 @@ def checkoutputfiles():
     for a in loss_stats['loss']:
         if(a != a):
             loss_stats['loss'] = []
-            toelectronmain("Eror Encountered")
+            toelectronmain("Error Encountered")
 
     for a in loss_stats['val_loss']:
         if(a != a):
             loss_stats['val_loss'] = []
-            toelectronmain("Eror Encountered")
+            toelectronmain("Error Encountered")
 
     for a in loss_stats['accuracy']:
         if(a != a):
             loss_stats['accuracy'] = []
-            toelectronmain("Eror Encountered")
+            toelectronmain("Error Encountered")
 
     for a in loss_stats['val_accuracy']:
         if(a != a):
             loss_stats['val_accuracy'] = []
-            toelectronmain("Eror Encountered")
+            toelectronmain("Error Encountered")
 
     for a in loss_stats['y_train_inv']:
         if(a != a):
             loss_stats['y_train_inv'] = []
-            toelectronmain("Eror Encountered")
+            toelectronmain("Error Encountered")
 
     for a in loss_stats['y_test_inv']:
         if(a != a):
             loss_stats['y_test_inv'] = []
-            toelectronmain("Eror Encountered")
+            toelectronmain("Error Encountered")
 
     for a in loss_stats['y_pred_inv']:
         if(a != a):
             loss_stats['y_pred_inv'] = []
-            toelectronmain("Eror Encountered")
+            toelectronmain("Error Encountered")
 
     for a in loss_stats['confusion_matrix']:
         if(a != a):
             loss_stats['confusion_matrix'] = []
-            toelectronmain("Eror Encountered")
+            toelectronmain("Error Encountered")
 
 def main():
     #receive the filepath as an input stream from main.js
