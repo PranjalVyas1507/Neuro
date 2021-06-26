@@ -1,0 +1,385 @@
+
+<!DOCTYPE html>
+<html ng-app="webapp">
+
+<head>
+  <link rel="stylesheet" href="bower_components/angular-material/angular-material.min.css">
+  <!-- Angular Material Dependencies -->
+  <script src="bower_components/angular/angular.min.js"></script>
+  <script src="bower_components/angular-animate/angular-animate.min.js"></script>
+  <script src="bower_components/angular-aria/angular-aria.min.js"></script>
+  <!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.7.7/xlsx.core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xls/0.7.4-a/xls.core.min.js"></script> -->
+  <script src="assets/scripts/sheetjs-0.15.2/xlsx.mini.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js" crossorigin="anonymous"></script>
+
+  <!-- Use dev version of Angular Material -->
+  <script src="bower_components/angular-material/angular-material.min.js"></script>
+  <script src="bower_components/angular-cookies/angular-cookies.min.js"></script>
+  <script src="assets/scripts/two.min.js"></script>
+  <script src="assets/scripts/Chart.min.js"></script>
+  <script src="assets/scripts/chartjs-chart-matrix.min.js"></script>
+  <script src="app.js"></script>
+
+
+  <!-- <script src="NNPark.js"></script> -->
+
+  <style>
+    .wrapper{
+      display:grid;
+      grid-template-columns: 15% 85%;
+      /*
+      grid-column-gap:1em;
+      grid-row-gap:1em;
+      */
+      grid-gap:1em;
+    }
+
+    .wrapper > div{
+      background:#eee;
+      padding:1em;
+    }
+    .wrapper > div:nth-child(odd){
+      background:#ddd;
+    }
+
+    .chart-container{
+      height: 620px;
+      width : 750px;
+      background: honeydew;
+      display: block;
+      align-self: center;
+
+    }
+
+    .progressLineardemoBasicUsage .bottom-block {
+      display: block;
+      position: relative;
+      width: 100%; }
+
+    .progressLineardemoBasicUsage .bottom-block > span {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 25px;
+      font-size: 0.9em; }
+
+  </style>
+  <title>Neuro : A place for Artificial Intelligence</title>
+  <link rel="shortcut icon" href="assets/images/ml_brain.png" type="image/png">
+</head>
+
+<body ng-controller="AppCtrl">
+<div style="background-color: azure">
+  <section layout="row" >
+    <md-sidenav id="SideNav" md-component-id="right" class="site-sidenav md-sidenav-left" md-whiteframe="4"
+                md-disable-backdrop style="transition: 0.5s"  md-disable-close-events="true" style="height: inherit; width: inherit">
+      <md-toolbar>
+        <div class="md-hue-2 md-toolbar-tools" style="background-color: royalblue ">
+          <md-subheader class="md-toolbar-tools md-theme-indigo" style="background-color: royalblue; font-style: oblique;
+                        color: snow"><b> Past Projects </b>  </md-subheader>
+          <md-button class="md-fab md-warn md-mini" ng-click="navToggle()" style="background-color: #1976D2;
+                         border-radius: 15%;border-style: hidden; outline: none; box-shadow: none">
+            <md-icon md-svg-src="assets/images/stop.svg" style="height:100%; width: 100%; background-color: #1976D2;
+                            color: #000000"></md-icon>
+            <md-tooltip>  Close History  </md-tooltip>
+          </md-button>
+        </div>
+      </md-toolbar>
+      <md-content>
+        <md-list flex>
+          <md-list-item class="md-theme-indigo" ng-repeat="NN in NNmodels"  md-whiteframe="6"
+                        style="margin: 7%; width: auto; height: auto">
+            <div class="md-list-item-text"  layout="column" >
+              <md-content layout="row">
+                <md-button class="md-fab " style="background-color: snow; align-items: center; align-self: center">
+                  <img  ng-src="{{ images[$index] }}" style="align-self: center; width: 75%; height: 75%" >
+                </md-button>
+
+                <md-content layout="column" style="background-color: snow">
+                  <h6 style="align-content: center;  padding-bottom: 5%; margin-bottom: 0%; padding-top: 5%;
+                                margin-top: 0%; font-style: oblique"> &ensp; &ensp;  {{ NN.fliename }} </h6>
+                  <md-content layout="row">
+                    <h5 style="padding-top: 5%; margin-top: 0%;padding-bottom: 5%; align-self: center;
+                                margin-bottom: 0%"> <b> &ensp;Type : &ensp; {{ NN.ptype }} &ensp; </b> </h5>
+                    <h5 style="padding-top: 5%; margin-top: 0%; padding-bottom: 5%; align-self: center;
+                                margin-bottom: 0%"> <b>Framework : &ensp; {{ NN.framework }}</b></h5>
+                  </md-content>
+                  <p style="padding-bottom: 5%; margin-bottom: 0%; padding-top: 5%;margin-top: 0%;
+                                        font-size: smaller">
+                    &ensp;{{ NN.date }}  </p>
+                  <div layout="row" style="align-items: flex-end; padding-top: 0%; border-style: hidden ">
+                    <md-button class="md-fab md-mini" style="background-color: snow;
+                                             border-style: hidden; outline: snow solid; box-shadow: none" ng-click="downloadreport($index)"
+                               ng-href="{{ excelURL  }}">
+                      <md-icon md-svg-src="assets/images/download.svg"> </md-icon>
+                      <md-tooltip>  Download Report  </md-tooltip>
+                    </md-button>
+                    <md-button class="md-fab md-mini" style="background-color: snow;
+                                             border-style: hidden; outline: snow solid; box-shadow: none " ng-click="Reloadparams($index)">
+                      <md-tooltip>  Open  </md-tooltip>
+                      <md-icon md-svg-src="assets/images/open.svg"></md-icon>
+                    </md-button>
+                    <md-button class="md-fab md-mini" style="background-color: snow;
+                                             border-style: hidden; outline: snow solid; box-shadow: none" ng-click="DeleteDoc($index)" >
+                      <md-tooltip> Delete </md-tooltip>
+                      <md-icon md-svg-src="assets/images/trash.svg"></md-icon>
+                    </md-button>
+                  </div>
+                </md-content>
+              </md-content>
+              <md-divider></md-divider>
+            </div>
+          </md-list-item>
+        </md-list>
+      </md-content>
+    </md-sidenav>
+  </section>
+  <md-content style="transition: margin-left .5s" id="Main">
+    <md-toolbar class="md-hue-1">
+      <div class="md-toolbar-tools">
+        <md-button class="md-icon-button" aria-label="History" ng-click="navToggle()">
+          <md-icon md-svg-icon="assets/images/list.svg"></md-icon>
+        </md-button>
+
+        <h2 flex md-truncate></h2>
+      </div>
+    </md-toolbar>
+    <!--
+    <div layout="column">
+      <md-toolbar style="background-color:#ffffff" >
+        <md-content layout="column">
+          <md-fab-speed-dial md-open="FABOpen" md-direction="right" style="background-color: #ffffff; " layout-align="left"
+                             class="md-fling" ng-mouseenter="FABOpen=true" ng-mouseleave="FABOpen=false">
+            <md-fab-trigger>
+              <md-content layout="row">
+                <md-menu>
+                  <md-button class="md-fab" style="background-color: snow;"
+                             ng-show="!Isguest" ng-click="$mdMenu.open($event)">
+                    <img ng-src="{{ profile }}" style="height: 100%; width: 100%">
+                    <md-tooltip style="font-size: smaller">{{ username }}</md-tooltip>
+                  </md-button>
+                  <md-menu-content>
+                    <md-menu-item>
+                      <md-button class=" md-accent" ng-click="navToggle()">History</md-button>
+                    </md-menu-item>
+                    <md-menu-item>
+                      <md-button class=" md-accent" ng-href="auth/logout" ng-click="Isguest=true">Logout</md-button   >
+                    </md-menu-item>
+                  </md-menu-content>
+                </md-menu>
+                <md-button aria-label="menu" class="md-fab" style="background-color: #ffffff" ng-show="Isguest">
+                  <img ng-src="{{ profile }}" style="height: 100%; width: 100%">
+                  <md-tooltip style="font-size: smaller">{{ username }}</md-tooltip>
+                </md-button>
+
+              </md-content>
+            </md-fab-trigger>
+
+            <md-fab-actions ng-show="Isguest">
+              <md-button aria-label="Twitter" class="md-fab md-raised md-mini" ng-href="/auth/twitter" >
+                <md-icon md-svg-src="assets/images/twitter.svg" aria-label="Twitter"></md-icon>
+              </md-button>
+              <md-button aria-label="Github" class="md-fab md-raised md-mini" ng-href="/auth/github"  style="background-color: black">
+                <md-icon md-svg-src="assets/images/github.svg" aria-label="Facebook" style="background-color: black"></md-icon>
+              </md-button>
+              <md-button  aria-label="google" class="md-fab md-raised md-mini" ng-href="/auth/google" >
+                <md-icon md-svg-icon="assets/images/google.svg" ></md-icon>
+              </md-button>
+            </md-fab-actions>
+          </md-fab-speed-dial>
+        </md-content>
+
+      </md-toolbar>
+    </div>
+    -->
+    <div layout="row">
+      <md-input-container>
+        <input  type="file"  id="xls_file" name="file" ng-disabled="hyperpara_disabled">
+        <md-button class="md-raised md-primary  " ng-click="addexcel()" ng-disabled="hyperpara_disabled">{{Upload_btn}}</md-button>
+        <md-progress-linear ng-disabled="progressivebar" class="md-hue-2" md-mode="indeterminate"></md-progress-linear>
+      </md-input-container>
+
+
+
+      <!-- Framework -->
+      <md-input-container>
+
+        <label>Preferred Framework</label>
+        <md-select ng-model="frmwrk" style="min-width: 200px; >
+                                ng-change="AppCtrl.modelHasChanged = true">
+          <md-option ng-repeat="frmwrk in strlist_frmwrk" ng-value="frmwrk">
+            {{ frmwrk }}
+          </md-option>
+        </md-select>
+      </md-input-container>
+
+      <!-- NN Type -->
+      <md-input-container>
+
+        <label>Type of Neural Network</label>
+        <md-select ng-model="ptype" ng-change="LSTM_graphic()" style="min-width: 200px; >
+                                ng-change="AppCtrl.modelHasChanged = true">
+          <md-option ng-repeat="ptype in strlist_ptype" ng-value="ptype">
+            {{ ptype }}
+          </md-option>
+        </md-select>
+      </md-input-container>
+
+      <!-- Numbers of layers and neurons in the neural network -->
+      <md-input-container>
+        <label>No of Hidden Layers</label>
+        <md-select ng-model="layer" ng-change="changelayergraphic()" style="width: 160px; >
+                            ng-change="AppCtrl.modelHasChanged = true">
+          <md-option ng-repeat="layer in fltlist_layers" ng-value="layer">
+            {{ layer }}
+          </md-option>
+        </md-select>
+
+        <md-button class="md-raised md-primary" ng-click="neurons_dialog($event)" layout="row" style="height: 28px; width: 40px">
+          <md-tooltip md-direction="bottom">Add neurons for each layer</md-tooltip>
+          <md-icon md-svg-src="assets/images/neuron.svg" style="height:8px; width: 5px">
+          </md-icon>
+          <p style="font-size: xx-small"> + Neurons</p>
+        </md-button>
+
+      </md-input-container>
+
+    </div>
+
+    <div ng-show="!progressivebar">
+      <md-progress-linear md-mode="query" ng-show="!progressivebar1"></md-progress-linear>
+      <div class="bottom-block" style="display: block;display: inline-block;margin-top: 10px;padding: 25px;font-size: 1em; border: 2px solid #aad1f9 ; background-color: rgba(255, 235, 169, 0.25);height: 40px; width: 100%;">
+        <span> {{ Display_Message }}</span>
+      </div>
+    </div>
+
+    <div class="wrapper" layout="row">
+      <!-- Tuning Hyperparameters -->
+      <div layout="column" layout-sm="row" layout-align="left center" layout-wrap>
+        <section style=" margin-bottom: 20px; margin-left: 0%; padding-left: 0%; border: none">
+          <div class="nn_controls" layout="row" layout-sm="row"  layout-wrap style="margin: 0%; padding: 0%" layout-align="left center">
+            <md-button class="md-fab md-ink-rippple scrolling play" ng-click='play()'  ng-disabled="Isplaydisabled" aria-label="Play"
+                       style="background: #3CC09A; height: 50px; width: 50px; margin-left: 0px; margin-right: 20px" ng-show="showplay">
+              <md-tooltip md-direction="bottom">{{play_tooltip}}</md-tooltip>
+              <md-icon md-svg-src="assets/images/play-button-svgrepo-com.svg">
+              </md-icon>
+            </md-button>
+            <md-button class="md-fab md-ink-rippple scrolling reset" ng-click='reset()' ng-disabled="Isresetdisabled" aria-label="Restart"
+                       style="background: #CD5C5C; height: 50px; width: 50px" ng-show="showreset">
+              <md-tooltip md-direction="bottom">{{stop_tooltip}}</md-tooltip>
+              <md-icon md-svg-src="assets/images/arrow.svg"></md-icon>
+            </md-button>
+            </div>
+        </section>
+        <!-- Learning Rate -->
+        <section>
+          <span>Learning Rate</span>
+          <md-input-container>
+            <label>Range 0.000001 - 0.9</label>
+            <input ng-model="flt_LR" min="0.000001" max="0.9" ng-disabled="hyperpara_disabled">
+          </md-input-container>
+        </section>
+        <md-divider></md-divider>
+        <!-- Batch Size -->
+        <section layout="column">
+          <span>Batch Size</span>
+          <md-content layout="row" style="background: #ddd">
+            <md-slider-container layout="column">
+              <md-slider min="20" max="150" ng-model="int_Batch" aria-label="blue" id="blue-slider"
+                         class="md-primary" ng-disabled="hyperpara_disabled">
+              </md-slider>
+            </md-slider-container>
+            <md-input-container >
+              <input type="number" min="1" max="150" ng-model="int_Batch" aria-label="blue" aria-controls="blue-slider" ng-disabled="hyperpara_disabled">
+            </md-input-container >
+          </md-content>
+        </section>
+        <!-- EPOCHS -->
+        <section layout="column">
+          <span>Epochs</span>
+          <md-content layout="row" style="background: #ddd">
+            <md-slider-container layout="column">
+              <md-slider min="1" max="300" ng-model="int_epoch" aria-label="blue" id="blue-slider"
+                         class="md-primary" ng-disabled="hyperpara_disabled">
+              </md-slider>
+            </md-slider-container>
+            <md-input-container >
+              <input type="number" min="1" max="300" ng-model="int_epoch" aria-label="blue" aria-controls="blue-slider" ng-disabled="hyperpara_disabled">
+            </md-input-container >
+          </md-content>
+        </section>
+        <!-- Optimization -->
+        <section style="width: 100%; margin-left: 0%; margin-right: 0%; border: none">
+          <md-input-container style="width: 100%; margin-left: 0%; margin-right: 0%" >
+            <label style="width: inherit">Optimizer</label>
+            <md-select ng-model="optype" style="width: 92%; margin-right: 0%; padding-right: 0%; border: none"
+                       ng-change="AppCtrl.modelHasChanged = true" ng-disabled="hyperpara_disabled">
+              <md-option ng-repeat="optype in strlist_optype" ng-value="optype">
+                {{ optype }}
+              </md-option>
+            </md-select>
+          </md-input-container>
+        </section>
+        <md-divider></md-divider>
+        <!-- Train -Test -Valid Split -->
+        <section>
+          <span >Test Split</span>
+
+          <md-input-container>
+            <label>Range : 0.01 - 0.3</label>
+            <input type="number" min="0.01" max="0.3" ng-model="flt_testsplit" aria-label="blue" aria-controls="blue-slider" ng-disabled="hyperpara_disabled">
+          </md-input-container >
+          </md-slider-container>
+        </section>
+        <md-divider></md-divider>
+        <section>
+          <span >Val Split</span>
+          <md-input-container>
+            <label>Range : 0.01 - 0.3</label>
+            <input type="number" min="0.01" max="0.3" ng-model="flt_vldsplit" aria-label="blue" aria-controls="blue-slider" ng-disabled="hyperpara_disabled">
+          </md-input-container >
+          </md-slider-container>
+        </section>
+        <md-divider></md-divider>
+      </div>
+      <div layout="column" layout-sm="row" layout-align="center center">
+        <md-progress-linear ng-disabled="progressivebar2" md-mode="indeterminate"></md-progress-linear>
+        <div ng-cloak  layout-align="left center">
+          <md-content  ng-show="showgraph">
+            <md-tabs class="md-raised md-primary" md-center-tabs md-dynamic-height>
+              <md-tab label="Model Metrics" style="height: 85%" class="_md ng-scope md-active">
+                <md-content class="md-padding" layout="column">
+                  <p>Loss and Accuracy Plot for your model</p>
+                  <div class="chart-container">
+                    <canvas id="Metrics-Chart" ></canvas>
+                  </div>
+                </md-content>
+              </md-tab>
+              <md-tab label="Test Set Analysis" style="height: 85%" class="_md ng-scope md-active">
+                <md-content class="md-padding" layout="column">
+                  <p >Predicted Results of the Neural Network</p>
+                  <div class="chart-container">
+                    <canvas id="Prediction-Chart" ></canvas>
+                  </div>
+                </md-content>
+              </md-tab>
+              <md-tab label="Auto Generated Code">
+                <md-content>
+                  <div class="padded" md-whiteframe="1"  layout layout-align="center center">
+                    <code><pre>{{ code }}</pre></code>
+                  </div>
+                </md-content>
+              </md-tab>
+            </md-tabs>
+          </md-content>
+        </div>
+        <div id="NN_park" style="background:#FFEFFE; height: auto; width: auto;"></div>
+      </div>
+    </div>
+  </md-content>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html ng-app="webapp">
+
+<head>
+    <link rel="stylesheet" href="https://rawgit.com/angular/bower-material/master/angular-material.min.css">
+    <!-- Angular Material Dependencies -->
+    <script src="../../bower_components/angular/angular.min.js"></script>
+    <script src="../../bower_components/angular-animate/angular-animate.min.js"></script>
+    <script src="../../bower_components/angular-aria/angular-aria.min.js"></script>
+
+    <!-- Use dev version of Angular Material -->
+    <script src="https://rawgit.com/angular/bower-material/master/angular-material.min.js"></script>
+    <script src="../scripts/registration.js"></script>
+    <title>Register for Neuro</title>
+</head>
+<body ng-controller="AppCtrl">
+   <form ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>User SignIn</h2>
+                <span flex></span>
+            </div>
+        </md-toolbar>
+        <md-card>
+            <div layout="row" layout-sm="row"  layout-wrap style="margin: 0%; padding: 0%" layout-align="left center">
+                <section style=" margin-bottom: 20px; margin-left: 0%; padding-left: 0%; border: none">
+                    <span> Username </span>
+                    <md-input-container>
+                        <label> Person Name</label>
+                        <input ng-model="str_username" >
+                    </md-input-container>
+                </section>
+                <section style=" margin-bottom: 20px; margin-left: 0%; padding-left: 0%; border: none">
+                    <span> Email Id </span>
+                    <md-input-container>
+                        <label> abc@xyz.com</label>
+                        <input ng-model="str_email" >
+                    </md-input-container>
+                </section>
+                <section style=" margin-bottom: 20px; margin-left: 0%; padding-left: 0%; border: none">
+                    <span> Company </span>
+                    <md-input-container>
+                        <label> Enterprise Name</label>
+                        <input ng-model="str_company" >
+                    </md-input-container>
+                </section>
+            </div>
+
+        </md-card>
+        <md-content layout="row">
+            <span flex></span>
+            <md-button ng-click="answer()" class="md-primary md-raised">
+                Apply
+            </md-button>
+        </md-content>
+    </form>
+</body>

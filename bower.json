@@ -1,0 +1,28 @@
+{
+  "name": "Neuro",
+  "description": "An application for deep learning",
+  "main": "main.js",
+  "authors": [
+    "PranjalVyas1507"
+  ],
+  "license": "CC0-1.0",
+  "keywords": [
+    "Electron"
+  ],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-material": "^1.2.1",
+    "angular-aria": "^1.8.0",
+    "angular-animate": "^1.8.0",
+    "angular-cookies": "^1.8.0",
+    "xlsx-js": "^0.8.7"
+  }
+}
