@@ -567,7 +567,7 @@ class Regressor_LSTM(nn.Module):
         return self.out
 
 
-<<<<<<< HEAD
+
 class DataCleansing:
 
   #global parameters
@@ -674,8 +674,6 @@ def tf_text_classifier(max_seq_len, bert_ckpt_file,classes):
 
 
   return model
-=======
->>>>>>> parent of 48de217 (Image and Text Classification add)
 
 def create_dataset(X, y, time_steps=1):
     Xs, ys = [], []
@@ -855,17 +853,11 @@ def data_preprocessing(file, parameters):
 
         except Exception as e:
             error_occured = True
-<<<<<<< HEAD
 
             toelectronmain("Error Encountered:"+ str(e))
 
             #with open('debug1.json', 'w') as fp:
                 #json.dump(str(e), fp)
-=======
-            toelectronmain("Error Encountered:"+e)
-            with open('debug1.json', 'w') as fp:
-                json.dump(str(e), fp)
->>>>>>> parent of 48de217 (Image and Text Classification add)
     #checkforreset()
 
 def tf_ann(parameters):
@@ -982,13 +974,10 @@ def tf_ann(parameters):
         loss_stats["val_accuracy"] = history.history['val_accuracy']
         loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
 
-<<<<<<< HEAD
+
 
         #toelectronmain("Error Encountered")
 
-=======
-        toelectronmain("Eror Encountered")
->>>>>>> parent of 48de217 (Image and Text Classification add)
         with open('result.json', 'w') as fp:
             json.dump(loss_stats, fp)
 
@@ -1121,13 +1110,11 @@ def tf_rnn(parameters):
         loss_stats["y_pred_inv"] = y_transformer.inverse_transform(y_pred).tolist()
         with open('result.json', 'w') as fp:
             json.dump(loss_stats, fp)
-<<<<<<< HEAD
+
 
         #toelectronmain("Error Encountered")
 
-=======
-        toelectronmain("Eror Encountered")
->>>>>>> parent of 48de217 (Image and Text Classification add)
+
         toelectronmain("Final_Message :Check Result")
         #toelectronmain("Final_Message : Kill Script")
 
@@ -1213,14 +1200,10 @@ def tf_multiclass(parameters):
                     json.dump(w_n_b,fp)
 
 
-<<<<<<< HEAD
 
 
                 cm =confusion_matrix(y_actual,y_predict,labels=category_array)
 
-=======
-                cm =[[0,0],[0,0]]
->>>>>>> parent of 48de217 (Image and Text Classification add)
                 loss_stats["loss"] = history.history['loss']
                 loss_stats["val_loss"] = history.history['val_loss']
                 loss_stats["accuracy"] = history.history['accuracy']
@@ -1241,7 +1224,7 @@ def tf_multiclass(parameters):
 
 
 
-<<<<<<< HEAD
+
 
 def tf_nlp_classify(parameters):
     try:
@@ -1354,8 +1337,6 @@ def tf_nlp_predict(parameters):
 def tf_cnn(parameters):
     pass
 
-=======
->>>>>>> parent of 48de217 (Image and Text Classification add)
 def pyt_preprocessing(file, parameters):
     global error_occured
     try:
@@ -1912,13 +1893,10 @@ def pyt_RNN(parameters):
             json.dump(w_n_b,fp)
         with open('result.json', 'w') as fp:
             json.dump(loss_stats, fp)
-<<<<<<< HEAD
+
 
         #toelectronmain("Error Encountered")
 
-=======
-        toelectronmain("Eror Encountered")
->>>>>>> parent of 48de217 (Image and Text Classification add)
         toelectronmain("Display_Message: Check Result")
 
 
@@ -1926,7 +1904,6 @@ def pyt_RNN(parameters):
         toelectronmain("Error Encountered" + str(e))
         error_occured = True
 
-<<<<<<< HEAD
 
 def pyt_multiclass(parameters):
     try:
@@ -2320,8 +2297,6 @@ def pyt_textpredict(parameters):
     pass
 
 
-=======
->>>>>>> parent of 48de217 (Image and Text Classification add)
 def find_extensions_headers():
     filepathflag = False
     global input_file
@@ -2559,7 +2534,7 @@ def main():
                     elif(lines['type']=='Time Series'):
                         pyt_RNN(lines)
                     elif(lines['type']=='MultiClass'):
-                        tf_multiclass(lines)
+                        pyt_multiclass(lines)
                     elif(lines['type']=='Text Classification'):
                         tf_rnn(lines)
                     elif(lines['type']=='Text Prediction'):
