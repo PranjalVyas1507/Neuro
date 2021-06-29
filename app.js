@@ -210,7 +210,7 @@ var chart ;
 
         function addlayer(layers,neurons)
         {
-            //console.log(layers);
+            console.log(layers);
             neurons.splice(layers,0,output_layer);             // adding an ouptut layer
 
 
@@ -1036,17 +1036,18 @@ var chart ;
             $scope.Reloadparams = function(i)
             {
                 //console.log('index:\t' + index);
-                $scope.layer = $scope.NNmodels['file'+(i+1)].layers ;
-                neurons_list = $scope.NNmodels['file'+(i+1)].neurons ;
-                $scope.ptype = $scope.NNmodels['file'+(i+1)].ptype ;
-                droputs = $scope.NNmodels['file'+(i+1)].dropouts ;
-                $scope.frmwrk = $scope.NNmodels['file'+(i+1)].framework ;
-                $scope.flt_LR = $scope.NNmodels['file'+(i+1)].learning_rate;
-                $scope.int_Batch = $scope.NNmodels['file'+(i+1)].Batch_Size ;
+                console.log("Reloafingparams")
+                $scope.layer = $scope.NNmodels[i].layers ;
+                neurons_list = $scope.NNmodels[i].neurons ;
+                $scope.ptype = $scope.NNmodels[i].ptype ;
+                droputs = $scope.NNmodels[i].dropouts ;
+                $scope.frmwrk = $scope.NNmodels[i].framework ;
+                $scope.flt_LR = $scope.NNmodels[i].learning_rate;
+                $scope.int_Batch = $scope.NNmodels[i].Batch_Size ;
                 //$scope.int_OpRate = $scope.$scope.NNmodels['file'+(i+1)]. ;
-                $scope.strlist_optype = $scope.NNmodels['file'+(i+1)].Optimizer ;
-                $scope.flt_testsplit = $scope.NNmodels['file'+(i+1)].test_split;
-                $scope.flt_vldsplit = $scope.NNmodels['file'+(i+1)].validation_split ;
+                $scope.strlist_optype = $scope.NNmodels[i].Optimizer ;
+                $scope.flt_testsplit = $scope.NNmodels[i].test_split;
+                $scope.flt_vldsplit = $scope.NNmodels[i].validation_split ;
                 neurons_list = neurons_list.map(function(v){
                     return +v ;
                 });
