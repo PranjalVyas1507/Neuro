@@ -36,7 +36,7 @@ contextBridge.exposeInMainWorld(
 
       },
       receive : function(channel,func){
-        const validchannels = ["fromMain", "Input_Features", "Display_Message", "Result", "Code", 'history', 'registered', 'restarted', 'deleted'] ;
+        const validchannels = ["fromMain", "Input_Features", "Display_Message", "Result", "Code", 'history', 'registered', 'restarted', 'deleted', 'Categories'] ;
         if(validchannels.includes(channel))
         {
           //console.log(data);
