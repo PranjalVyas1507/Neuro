@@ -66,7 +66,7 @@
       font-size: 0.9em; }
 
   </style>
-  <title>Neuro : A place for Artificial Intelligence</title>
+  <title>Neuro : A studio for Artificial Intelligence</title>
   <link rel="shortcut icon" href="assets/images/ml_brain.png" type="image/png">
 </head>
 
@@ -118,7 +118,7 @@
                     </md-button>
                     <md-button class="md-fab md-mini" style="background-color: snow;
                                              border-style: hidden; outline: snow solid; box-shadow: none " ng-click="Reloadparams($index)">
-                      <md-tooltip>  Open  </md-tooltip>
+                      <md-tooltip>  Load  </md-tooltip>
                       <md-icon md-svg-src="assets/images/open.svg"></md-icon>
                     </md-button>
                     <md-button class="md-fab md-mini" style="background-color: snow;
@@ -142,8 +142,10 @@
         <md-button class="md-icon-button" aria-label="History" ng-click="navToggle()">
           <md-icon md-svg-icon="assets/images/list.svg"></md-icon>
         </md-button>
-
-        <h2 flex md-truncate></h2>
+        <h3 flex md-truncate></h3>
+        <md-button class="md-icon-button" aria-label="NNPlayground" ng-click="OpenPlayGnd()">
+          <md-icon md-svg-icon="assets/images/Playground.svg"
+        </md-button>
       </div>
     </md-toolbar>
     <!--
@@ -248,7 +250,7 @@
 
     </div>
 
-    <div ng-show="!progressivebar">
+    <div ng-show="!progressivebar1">
       <md-progress-linear md-mode="query" ng-show="!progressivebar1"></md-progress-linear>
       <div class="bottom-block" style="display: block;display: inline-block;margin-top: 10px;padding: 25px;font-size: 1em; border: 2px solid #aad1f9 ; background-color: rgba(255, 235, 169, 0.25);height: 40px; width: 100%;">
         <span> {{ Display_Message }}</span>
@@ -361,7 +363,7 @@
                 <md-content class="md-padding" layout="column">
                   <p >Predicted Results of the Neural Network</p>
                   <div class="chart-container">
-                    <canvas id="Prediction-Chart" ></canvas>
+                    <canvas id="Prediction-Chart" style="height: 100%; width: 100%"></canvas>
                   </div>
                 </md-content>
               </md-tab>
