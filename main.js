@@ -421,6 +421,25 @@ pyscript.on('message',function(message){
             mainWindow.webContents.send("fromMain",message[0]);
             delete_temp_files();
         }
+        else if(message[0].includes("Categories"))
+        {
+            if(message[0].includes("name"))
+            {
+                message = message[0].split(":",2);
+                //console.log(typeof message[1]);
+                message = (message[1]);
+                //console.log(typeof message);
+                mainWindow.webContents.send("Category_array",message);
+            }
+            else
+            {
+                message = message[0].split(":",2);
+                //console.log(typeof message[1]);
+                message = Number(message[1]);
+                //console.log(typeof message);
+                mainWindow.webContents.send("Categories",message);
+            }
+        }
 
     }
 });
@@ -445,9 +464,9 @@ function storeparams()
     username = getNeuroUser();
     console.log("Storing params for",username);
     var NeuralNetworkmodel ;
-    if(params.type ==='Classification')
+    if((params.type ==='Classification')||(params.type ==='MultiClass'))
     {
-      //  console.log("Classification");
+        console.log(params.type);
         NeuralNetworkmodel = {
             fliename : params.filename,
             layers : params.layers ,
@@ -475,7 +494,7 @@ function storeparams()
     }
     else
     {
-        console.log("TimeSeries");
+        //console.log("TimeSeries");
         NeuralNetworkmodel = {
             fliename : params.filename,
             layers : params.layers ,
