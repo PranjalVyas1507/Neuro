@@ -210,7 +210,8 @@ var chart ;
 
         function addlayer(layers,neurons)
         {
-            console.log(layers);
+            //console.log(layers);
+            //console.log(neurons);
             neurons.splice(layers,0,output_layer);             // adding an ouptut layer
 
 
@@ -221,6 +222,7 @@ var chart ;
                 received_params = false ;
             }*/
             layers = layers + 1 ;
+            console.log(typeof layers);
             two.clear() ;
             var i,j ;
             neurons_total(layers,neurons);
@@ -236,11 +238,12 @@ var chart ;
                 addinputparameters();
                 for(i=0;i<layers;++i)
                 {
+                    console.log(layers);
                     //console.log(neurons[i]);
                     init_y = 20 ;
                     for(j=0;j<neurons[i];++j)
                     {
-                        console.log($scope.ptype,neurons);
+                        //console.log($scope.ptype,neurons);
                         //console.log(neurons[i]);
                       /*  if(neurons[i]>22)
                         {
@@ -251,8 +254,7 @@ var chart ;
                         {*/
                             init_y = 20 + ((j+1)*(canvas_size.canvas_height/(neurons[i]+1))) ;
                         //}
-
-
+                        //console.log(canvas_size);
                         addneuron(init_x,init_y,20);
 
                         abssica.push(init_x) ;
@@ -1036,7 +1038,7 @@ var chart ;
             $scope.Reloadparams = function(i)
             {
                 //console.log('index:\t' + index);
-                console.log("Reloafingparams")
+                console.log("Reloadingparams")
                 $scope.layer = $scope.NNmodels[i].layers ;
                 neurons_list = $scope.NNmodels[i].neurons ;
                 $scope.ptype = $scope.NNmodels[i].ptype ;
