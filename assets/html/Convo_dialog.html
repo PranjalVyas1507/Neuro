@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<md-dialog aria-label="Neurons and Activation_Functions">
+    <form ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Add perceptron Layer</h2>
+                <span flex></span>
+            </div>
+        </md-toolbar>
+
+        <md-dialog-content>
+            <div class="md-dialog-content" layout="column">
+
+                <div class="md-dialog-content" layout="row">
+                    <form>
+                        <md-list>
+                            <md-list-item ng-repeat="Neuron in ActNeuronPara">
+                                <md-input-container>
+                                    <label>Neurons</label>
+                                    <input ng-model="Neuron.no_percp" style="min-width: 60px" required type="number" min="1" max="500">
+                                </md-input-container>
+
+                                <md-input-container>
+                                    <label>Dropout</label>
+                                    <input ng-model="Neuron.Dropout" style="min-width: 60px" required type="number" min="0.0" max="0.7">
+                                </md-input-container>
+                            </md-list-item>
+
+                        </md-list>
+
+                    </form>
+
+                </div>
+
+            </div>
+        </md-dialog-content>
+        <md-divider></md-divider>
+        <md-dialog-actions layout="row">
+            <span flex></span>
+            <md-button ng-click="answer()" class="md-primary md-raised">
+                Apply
+            </md-button>
+            <md-button ng-click="answer()" class="md-primary md-raised">
+                Cancel
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
