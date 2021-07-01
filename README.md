@@ -1,13 +1,6 @@
-<<<<<<< HEAD
-"# Neuro-Cognition.app" 
-"# Neuro" 
-"# Neuro" 
-"# Neuro" 
-"# Neuro" 
-"# Neuro" 
-"# Neuro" 
-"# Neuro" 
-"# Neuro" 
+
+"# Neuro"
+
 =======
 # electron-quick-start
 
@@ -55,4 +48,4 @@ Note: If you're using Linux Bash for Windows, [see this guide](https://www.howto
 
 [CC0 1.0 (Public Domain)](LICENSE.md)
 >>>>>>> a3c415c48d9249ec11cc37464e21ddd932c2f8fe
-"# Neuro" 
+"# Neuro"

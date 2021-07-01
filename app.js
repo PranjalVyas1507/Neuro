@@ -106,7 +106,8 @@ var chart ;
 
         var elem = document.getElementById('NN_park');
        // var elem = $("#NN-visualizer").getElementById("NeuralPark");
-        var two = new Two({
+       //elem.addEventListener('mouseover',showTicker(event),false);
+            var two = new Two({
             type: Two.Types.canvas,
              width: 1300, height: 900
             // fullscreen:
@@ -156,12 +157,12 @@ var chart ;
             circle.stroke = 'blue'; // Accepts all valid css color
             circle.linewidth = 2.5;
 
-            /*   $(circle._renderer.elem)
-                .css('cursor', 'pointer')
-                .click(function(e) {
-                    circle.fill = getRandomColor();
-                });
+            two.bind('update', function(frameCount, timeDelta) {
+                circle.rotation = frameCount / 60;
+            });
 
+            two.play();
+            /*
 
              var theta = Math.PI * 2 * (frameCount / 60);
 
@@ -178,6 +179,14 @@ var chart ;
 
 
         }
+
+         function showTicker(event){
+             console.log("Ticker should be shown")
+             var posx = event.clientX;
+             var posy = event.clientY;
+             $mdToast.show($mdToast.simple()
+                 .textContent("Perceptron"+ toString(posx) + toString(posy)).position('top right').hideDelay(3500));
+         };
          //adding input features to pictorial representation
          function addinputparameters()
          {
@@ -210,7 +219,7 @@ var chart ;
 
         function addlayer(layers,neurons)
         {
-            //console.log(layers);
+            //console.log(typeof layers);
             //console.log(neurons);
             neurons.splice(layers,0,output_layer);             // adding an ouptut layer
 
@@ -221,7 +230,7 @@ var chart ;
                 layers = layers + 1 ;
                 received_params = false ;
             }*/
-            layers = layers + 1 ;
+            layers = parseInt(layers) + parseInt(1) ;
             console.log(typeof layers);
             two.clear() ;
             var i,j ;
@@ -662,7 +671,7 @@ var chart ;
                  }
                  else
                  {
-                     console.log("Upload else");
+                     //console.log("Upload else");
                      $scope.Display_Message = "NO FILE UPLOADED" ;
                      $mdToast.show($mdToast.simple()
                          .textContent("NO FILE UPLOADED").position('top right').hideDelay(3500));
@@ -968,9 +977,16 @@ var chart ;
 
         $scope.neurons_dialog = function(ev)
             {
+                var url = 'assets/html/MLP_dialog.html';
+
+                if($scope.ptype === 'Image Classification')
+                {
+                    url = 'assets/html/Intro.html'
+                }
+
             $mdDialog.show({
                 controller: DialogController,
-                templateUrl: 'assets/html/MLP_dialog.html',
+                templateUrl: url,
                 parent: angular.element(document.body),
                 targetEvent: ev,
                 clickOutsideToClose:false,
