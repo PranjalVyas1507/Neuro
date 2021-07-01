@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, shutil
 import json
 import numpy as np
 import time
@@ -16,6 +16,8 @@ from sklearn.metrics import classification_report
 import keras
 from keras.models import Sequential
 from keras.layers import Dense
+from keras.preprocessing.image import ImageDataGenerator
+from keras.layers import Conv2D, MaxPool2D, Flatten
 
 #from keras.models import Sequential
 #from keras.layers import Dense
@@ -666,7 +668,118 @@ def create_dataset_tc(df, tokenizer, max_len, batch_size,headers,target):
     return DataLoader(dataset, batch_size=batch_size, num_workers=0)# parameters['batch_size']
 
 
+def split_images(source,destination,class_,set=0):
+    src_files = []
+    print(class_)
+    for _,_,filenames in os.walk(source):
+        src_files.extend(filenames)
 
+    for file in src_files:
+        if(file.lower().endswith(('.jpg','.jpeg','.png')) == False):
+            print(file)
+            src_files.remove(file)
+
+    #print(len(src_files))
+
+    if set == 0 :   #TRAIN SET
+        start = 0
+        stop = len(src_files)-int((test_split+val_split)*len(src_files))
+    elif set == 1: #VAL SET
+        start = len(src_files)-int((test_split+val_split)*len(src_files))+1
+        stop = len(src_files)-int(test_split*len(src_files))
+    elif set ==2: #TEST SET
+        start = len(src_files)-int(test_split*len(src_files))+1
+        stop = len(src_files)
+    else:
+        pass
+
+    print(set)
+    print(start)
+    print(stop)
+
+
+    for i in range(start,stop):
+
+        #print(src_files[i])
+        src = os.path.join(source,src_files[i])
+        dst = os.path.join(destination,src_files[i])
+        shutil.copyfile(src,dst)
+        if i == 1 :
+            global height
+            global width
+            width , height = Image.open(src).size
+        #new_name_str = str(class_)+"_"+str(file)
+        #new_name = os.path.join(destination,new_name_str)
+        #os.rename(dst,new_name)
+    #return height,width
+
+def transfer_images(classes_list,train_dir,test_dir,val_dir=None):
+    for class_ in classes_list:
+        sourcepath = os.path.join(project_path,class_)
+        #Training set
+        class_dir = os.path.join(train_dir,class_)
+        os.mkdir(class_dir)
+        split_images(sourcepath,class_dir,class_,0)
+
+        #Testing set
+        class_dir = os.path.join(test_dir,class_)
+        os.mkdir(class_dir)
+        split_images(sourcepath,class_dir,class_,1)
+
+        #Validation Set
+        class_dir = os.path.join(val_dir,class_,)
+        os.mkdir(class_dir)
+        split_images(sourcepath,class_dir,class_,2)
+
+def prepare_dataset(dataset_case):
+    if(dataset_case == 0):
+        print("Please check the data could not find images")
+    elif(dataset_case == 1):
+        # Case 1 : Expect dataset with a file to map images with labels
+        #Dataset is a folder with just images
+        temp_dir = os.path.join(basepath,'temp')
+        train_dir = os.path.join(temp_dir,'train')
+        test_dir = os.path.join(temp_dir,'test')
+        os.mkdir(train_dir)
+        os.mkdir(test_dir)
+
+        pass
+    elif(dataset_case == 2):
+        #Case 2 : Dataset with train and test folder
+        # Check for subdirectories
+        #2.1 No sub directories : similar to case 1, expect an excel file
+        #2.2 Found sub directories, read as output classes
+        pass
+    elif(dataset_case == 3):
+        #Case 3: Train test and val folder
+        #Similar to case 2
+        pass
+    elif(dataset_case == 4):
+        #Case 4 : No test trai or val directories,
+        #Subdirectories are avaialble that should be considered as classes
+        classes_list = []
+
+
+        #Get the name for the subdirectories and their contents
+        for root, dirnames, filenames in os.walk(project_path):
+            classes_list.extend(dirnames)
+        print(classes_list)
+
+
+        #make directories temp\train, temp\test
+        temp_dir = os.path.join(basepath,'temp')
+        train_dir = os.path.join(temp_dir,'train')
+        test_dir = os.path.join(temp_dir,'test')
+        val_dir = os.path.join(temp_dir,'val')
+        os.mkdir(temp_dir)
+        os.mkdir(train_dir)
+        os.mkdir(test_dir)
+        os.mkdir(val_dir)
+
+        #make directories of classes in temp\train and temp\test
+
+        transfer_images(classes_list,train_dir,test_dir,val_dir)
+        return train_dir, test_dir,val_dir
 
 
 def tf_text_classifier(max_seq_len, bert_ckpt_file,classes):
@@ -1241,10 +1354,6 @@ def tf_multiclass(parameters):
         toelectronmain(str(e))
         error_occured = True
 
-
-
-
-
 def tf_nlp_classify(parameters):
     try:
         global bert_1
@@ -1342,8 +1451,6 @@ def tf_nlp_classify(parameters):
         toelectronmain(str(e))
         error_occured = True
 
-
-
 def tf_nlp_predict(parameters):
 
     try:
@@ -1351,10 +1458,162 @@ def tf_nlp_predict(parameters):
     except Exception as e:
         raise
 
-
-
 def tf_cnn(parameters):
-    pass
+    #1. Worst case scenario, no train/val/test divison or class based divsion,
+    #need an label,image mapping based file
+    if(len(dir)==0):
+        print("\nNo Sub-Directories found\n")
+        if(len(files)<10):
+            dataset_case = 0
+        else:
+            dataset_case = 1
+            #print(files)
+
+    else:
+        #2. Scenario 2.1  : divsions based on train/val/test sets
+        if(('train' in dir) or ('trainset' in dir) or ('train set' in dir)):
+            #2. Scenario 2.1.1  : just train set
+            #Steps :
+            #1. Find if class sub-directories are available
+            #1.1 if sub-directories are not available , need an label,image mapping based file
+            #2. Divde train folder and register test&val directories
+            #3. ImageDataGenerator objects are to be created for train,val,test
+            if(len(dir) == 2):
+                if(('test' in dir) or ('testset' in dir) or ('test set' in dir)):
+                    dataset_case = 2
+                #2. Scenario 2.1.2  : 2 fold divsion test set available
+                elif(('val' in dir) or ('valset' in dir) or ('val set' in dir)):
+                    dataset_case = 2
+                elif(('validation' in dir) or ('validationset' in dir) or ('validation set' in dir)):
+                    dataset_case = 2
+                elif(('dev' in dir) or ('devset' in dir) or ('dev set' in dir)):
+                    dataset_case = 2
+                else:
+                    dataset_case = 1
+
+            elif(len(dir) == 3):
+                if(('test' in dir) or ('testset' in dir) or ('test set' in dir)):
+                    #2. Scenario 2.1.3  : 3 fold divsion val and test sets available
+                    if(('val' in dir) or ('valset' in dir) or ('val set' in dir)):
+                        dataset_case = 3
+                    elif(('validation' in dir) or ('validationset' in dir) or ('validation set' in dir)):
+                        dataset_case = 3
+                    elif(('dev' in dir) or ('devset' in dir) or ('dev set' in dir)):
+                        dataset_case = 3
+                    else:
+                        dataset_case = 2
+                else:
+                    dataset_case = 1
+            else:
+                dataset_case = 0
+        else:
+            if(len(dir)>1):
+                dataset_case = 4
+                # Scenario 2.2 : Sub-directories available in form of classes
+            else:
+                #Scenario
+                dataset_case = 0
+    # Getting train, dev and validation  dataset
+    print(dataset_case)
+
+
+
+    #Uncomment the line below for final code
+    train_dir , test_dir, val_dir = prepare_dataset(dataset_case)
+
+
+
+    #tv_split = test_split + val_split
+    #train_ds = image_dataset_from_directory(train_dir,validation_split=val_split,subset="training",seed=123,batch_size=32)
+    #val_ds = image_dataset_from_directory(train_dir,validation_split=val_split,subset="validation",seed=123,batch_size=32)
+    #print(train_ds)
+    #print(test_ds)
+
+
+    global height
+    global width
+
+
+    src = 'D:/Instincts/AI-ML/Neural_Server/Datasets/Academic Torrents/leafcounting/WeedCountImages_v1/1/0.png'
+    width , height = Image.open(src).size
+    temp_dir = os.path.join(basepath,'temp')
+    train_dir = os.path.join(temp_dir,'train')
+    test_dir = os.path.join(temp_dir,'test')
+    val_dir = os.path.join(temp_dir,'val')
+
+
+    train_datagen = ImageDataGenerator(rescale = 1./255,
+                                       shear_range = 0.2,
+                                       zoom_range = 0.2,
+                                       horizontal_flip = True)
+    training_set = train_datagen.flow_from_directory(train_dir,
+                                                     target_size = (height, width),
+                                                     shuffle = True,
+                                                     batch_size = 64,
+                                                     class_mode = 'categorical')
+
+
+    val_datagen = ImageDataGenerator(rescale = 1./255)
+    val_set = val_datagen.flow_from_directory(val_dir,
+                                              target_size = (height, width),
+                                              shuffle = True,
+                                              batch_size = 64,
+                                              class_mode = 'categorical')
+
+
+
+    # Preprocessing the Test set
+    test_datagen = ImageDataGenerator(rescale = 1./255)
+    test_set = test_datagen.flow_from_directory(test_dir,
+                                                target_size = (height, width),
+                                                shuffle = False,
+                                                batch_size = 1,
+                                                class_mode = 'categorical')
+
+
+    Convo_classifier = Sequential()
+
+    Convo_classifier.add(Conv2D(filters=64, kernel_size=5, activation='relu', input_shape=[height, width, 3]))
+
+    Convo_classifier.add(MaxPool2D(pool_size=3, strides=3))
+
+    Convo_classifier.add(Conv2D(filters=100, kernel_size=3, activation='relu'))
+    Convo_classifier.add(MaxPool2D(pool_size=2, strides=2))
+
+    Convo_classifier.add(Conv2D(filters=128, kernel_size=3, activation='relu'))
+    Convo_classifier.add(MaxPool2D(pool_size=3, strides=3))
+
+
+    Convo_classifier.add(Conv2D(filters=256,kernel_size=3, activation='relu'))
+    Convo_classifier.add(MaxPool2D(pool_size=2, strides=2))
+
+
+    Convo_classifier.add(Flatten())
+
+    # Step 4 - Full Connection
+    Convo_classifier.add(Dense(units=256, activation='relu')) #256*4*4
+    Convo_classifier.add(Dense(units=128, activation='relu'))
+    Convo_classifier.add(Dense(units=32, activation='relu'))
+
+    # Step 5 - Output Layer
+    Convo_classifier.add(Dense(units=9, activation='softmax'))
+    # Compiling the Convo_classifier
+    Convo_classifier.compile(optimizer = keras.optimizers.Adam(learning_rate=0.001), loss = 'categorical_crossentropy', metrics = ['accuracy'])
+
+    # Training the Convo_classifier on the Training set and evaluating it on the Test set
+    history = Convo_classifier.fit(x = training_set, validation_data = val_set, epochs = 50,verbose = 1, shuffle = 1)
+
+
+    test_steps_per_epoch = np.math.ceil(test_set.samples / test_set.batch_size)
+    predictions = Convo_classifier.predict_generator(test_set,test_steps_per_epoch)
+    predicted_classes = np.argmax(predictions, axis=1)
+
+
+    print(testset.classes)
+    cm = confusion_matrix(test_set.classes,predictions,test_set.class_indices.keys())
+    print(cm)
+    #shutil.rmtree('temp')
+
 
 def pyt_preprocessing(file, parameters):
     global error_occured
