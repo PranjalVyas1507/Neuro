@@ -3,9 +3,36 @@
 
 // Code goes here
 
+
+
+// Default params for MLP & seq2seq
 var default_neurons = [3, 5, 2] ;
 var default_layers = 3;
+
+
+
 var canvas_size = {} ;
+
+// Defualt params for Convnets
+var convlayers_default = 3 ;
+var conv_params = [ {
+    filters : 32,
+    kernel : 3,
+    dropout : 0,
+    activation : 'relu'},
+    {
+        filters : 64,
+        kernel : 3,
+        dropout : 0,
+        activation : 'relu'
+    },
+    {
+        filters : 128,
+        kernel : 3,
+        dropout : 0,
+        activation : 'relu'
+    }];
+
 
 // Intial co-ordinates for 2D Rendering
 var init_x = 110 , init_y = 20 ;
@@ -35,7 +62,7 @@ var received_params = false ;
 var call_from_play = false ;
 var chart ;
 
-    angular.module('webapp', ['ngMaterial', 'ngCookies'])
+    angular.module('webapp', ['ngMaterial'])
     .controller('AppCtrl', function($scope, $http, $mdDialog, $mdToast, $mdSidenav) {
 
         //IntroDialog();
@@ -46,7 +73,8 @@ var chart ;
         //List of Options for the NN Framework
         $scope.strlist_frmwrk = ['Keras', 'PyTorch'];
         //$scope.strlist_ptype = ['Classification' , 'Sequence Model' , 'Generative', 'Segmentation', 'Mapping'];
-        $scope.strlist_ptype = ['Classification' , 'Time Series', 'MultiClass'] ;
+        $scope.strlist_ptype = ['Data Classification' , 'Time Series', 'MultiClass', 'Image Classification'] ;
+        $scope.Input_type = ['Structured Data', 'Image', 'Text'];
         $scope.strlist_optype = ['SGD' , 'Adam', 'Adagrad','RMSProp', 'Adamax'];
         $scope.fltlist_layers = ['1','2','3','4','5','6'] ;
 
@@ -64,7 +92,7 @@ var chart ;
             // Selected Variables from the list of functions
         $scope.optype = 'Adam' ;
         $scope.frmwrk = 'Keras' ;
-        $scope.ptype = 'Classification';
+        $scope.ptype = 'Data Classification';
         $scope.layer = default_layers ;
         //$scope.xl_file = new file();
         $scope.chart = null;
@@ -193,7 +221,7 @@ var chart ;
              var ip_x = 0, ip_y = canvas_size.canvas_height/2, input_neuron, name = $scope.filename.split("\\") ;
              if(received_params === true)
              {
-                 if(($scope.ptype === 'Classification')||($scope.ptype === 'MultiClass'))
+                 if(($scope.ptype === 'Data Classification')||($scope.ptype === 'MultiClass'))
                  {
                      input_neuron = two.makeCircle(ip_x,ip_y,20);
                      input_neuron.fill = radialGradient ;
@@ -242,7 +270,7 @@ var chart ;
             //console.log(canvas_size.canvas_width) ;
             //console.log(canvas_size.canvas_height);
 
-            if(($scope.ptype === 'Classification')||($scope.ptype == 'MultiClass'))
+            if(($scope.ptype === 'Data Classification')||($scope.ptype == 'MultiClass'))
             {
                 addinputparameters();
                 for(i=0;i<layers;++i)
@@ -896,7 +924,7 @@ var chart ;
                 var n = neurons_list ;
                 addlayer(l,n);
                 //addlayer(default_layers,default_neurons) ;
-            };  
+            };
 
 
         $scope.changelayergraphic = function()
@@ -918,12 +946,29 @@ var chart ;
 
         function DialogController($scope, $mdDialog, $mdToast,layers, ptype) {
 
-           $scope.ActNeuronPara = [
+            $scope.ActNeuronPara = [
                 {
                     no_percp : 2,
                     Dropout : 0.1
                 }
             ];
+            $scope.ConvParam = [
+                {
+                    filters : 32,
+                    kernel_size : 3
+                }
+            ];
+            if(ptype === 'Data Classification')
+            {
+
+            }
+            else if(ptype === 'Image Classification')
+            {   var i ;
+                for (i=0;i<convlayers_default;++i)
+                {
+
+                }
+            }
 
             for(i=0;i<layers;++i)
             {
@@ -981,7 +1026,7 @@ var chart ;
 
                 if($scope.ptype === 'Image Classification')
                 {
-                    url = 'assets/html/Intro.html'
+                    url = 'assets/html/Convo_dialog.html'
                 }
 
             $mdDialog.show({
@@ -1528,7 +1573,7 @@ var chart ;
             };
             $scope.graph_datasets.push(loss) ;
             $scope.graph_datasets.push(val_loss);
-            if(($scope.ptype==='Classification')||($scope.ptype==='MultiClass'))
+            if(($scope.ptype==='Data Classification')||($scope.ptype==='MultiClass'))
             {
                 var accuracy = response.accuracy ;
                 var val_accuracy = response.val_accuracy ;
@@ -1655,7 +1700,7 @@ var chart ;
              {
               //   console.log($scope.NNmodels[0].ptype);
                //  console.log(typeof $scope.NNmodels[0].ptype)
-                 if($scope.NNmodels[i].ptype =='Classification')
+                 if($scope.NNmodels[i].ptype =='Data Classification')
                  {
                  //    console.log("History if");
                      $scope.images[i] = 'assets/images/binary.svg' ;
@@ -1695,7 +1740,7 @@ var chart ;
          {
             var canvas_width , canvas_height ;
 
-            if(($scope.ptype === 'Classification')||($scope.ptype === 'MultiClass'))
+            if(($scope.ptype === 'Data Classification')||($scope.ptype === 'MultiClass'))
             {
                 max_neuron = Math.max.apply(Math,n);
                 //console.log(max_neuron);
