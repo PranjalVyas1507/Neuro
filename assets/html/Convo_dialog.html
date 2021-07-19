@@ -3,15 +3,78 @@
     <form ng-cloak>
         <md-toolbar>
             <div class="md-toolbar-tools">
-                <h2>Add perceptron Layer</h2>
+                <h2>Sequential Convolutional Modelling</h2>
                 <span flex></span>
             </div>
         </md-toolbar>
 
+        <div>
+            <md-content md-class="md-content" md-whiteframe="1" layout="row">
+
+                <md-input-container>
+                    <label>Num of Convolutional Layers</label>
+                    <input ng-model="ConvNetlayers_total" style="min-width: 60px" required type="number" min="1"
+                           max="15" ng-change="ChangeSeqLength('Conv')">
+                </md-input-container>
+
+                <md-input-container>
+                    <label>Num of Perceptron Layers</label>
+                    <input ng-model="Percplayers_total" style="min-width: 60px" required type="number" min="1"
+                           max="6" ng-change="ChangeSeqLength('Perceptron')">
+                </md-input-container>
+
+            </md-content>
+        </div>
+
         <md-dialog-content>
             <div class="md-dialog-content" layout="column">
+                <md-divider></md-divider>
+                <div class="md-content" md-whiteframe="1.35" layout="column">
+                    <md-subheader class="md-secondary" style="color: #1976D2"> ConvNets </md-subheader>
+                    <form>
+                        <md-list style="overflow: auto">
+                            <md-list-item ng-repeat="ConvLayer in ConvParam" style="overflow: auto">
+                                <md-input-container >
+                                    <label>Layer Type</label>
+                                    <md-select ng-model="ConvLayer.type" style="min-width: 200px; >
+                                    ng-change="AppCtrl.modelHasChanged = true">
+                                        <md-option ng-repeat="clayer in convlayer" ng-value="clayer">
+                                            {{ clayer }}
+                                        </md-option>
+                                    </md-select>
+                                </md-input-container>
 
-                <div class="md-dialog-content" layout="row">
+                                <md-input-container ng-show="(ConvLayer.type == 'Conv2D')" style="padding: 0%; margin: 0%">
+                                    <label>Number of filters</label>
+                                    <input ng-model="ConvLayer.filters" style="min-width: 33%" required type="number"
+                                           min="1" max="600">
+                                </md-input-container>
+
+                                <md-input-container ng-show="(ConvLayer.type == 'Conv2D')">
+                                    <label>Kernel size</label>
+                                    <input ng-model="ConvLayer.kernel" style="min-width: 33%" required type="number"
+                                           min="1" max="10">
+                                </md-input-container>
+
+                                <md-input-container ng-show="(ConvLayer.type == 'MaxPool2D')">
+                                    <label>Pool Size</label>
+                                    <input ng-model="ConvLayer.pool_size" style="min-width: 33%;"
+                                           required type="number" min="1" max="10" >
+                                </md-input-container>
+
+                                <md-input-container ng-show="(ConvLayer.type == 'MaxPool2D')">
+                                    <label>Strides</label>
+                                    <input ng-model="ConvLayer.strides" style="min-width: 33%" required type="number"
+                                           min="1" max="10">
+                                </md-input-container>
+                            </md-list-item>
+                        </md-list>
+                    </form>
+                </div>
+
+                <md-divider></md-divider>
+                <div class="md-dialog-content" md-whiteframe="1.35" layout="column">
+                    <md-subheader class="md-secondary" style="color: #1976D2"> Perceptron layers </md-subheader>
                     <form>
                         <md-list>
                             <md-list-item ng-repeat="Neuron in ActNeuronPara">
@@ -40,7 +103,7 @@
             <md-button ng-click="answer()" class="md-primary md-raised">
                 Apply
             </md-button>
-            <md-button ng-click="answer()" class="md-primary md-raised">
+            <md-button ng-click="cancel()" class="md-primary md-raised">
                 Cancel
             </md-button>
         </md-dialog-actions>
