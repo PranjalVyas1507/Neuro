@@ -8,32 +8,41 @@
 // Default params for MLP & seq2seq
 var default_neurons = [3, 5, 2] ;
 var default_layers = 3;
-
+var default_layertype = ['dense', 'dense','dense'] ;
+var nn_model = [] ;
 
 
 var canvas_size = {} ;
 
 // Defualt params for Convnets
-var convlayers_default = 3 ;
-var conv_params = [ {
+var convlayers_default = 4 ;
+var conv_params_default = [ {
+    type : 'Conv2D',
     filters : 32,
     kernel : 3,
     dropout : 0,
     activation : 'relu'},
     {
+        type : 'Conv2D',
         filters : 64,
         kernel : 3,
         dropout : 0,
         activation : 'relu'
     },
     {
+        type : 'Conv2D',
         filters : 128,
         kernel : 3,
         dropout : 0,
         activation : 'relu'
+    },
+    {
+        type : 'MaxPool2D',
+        pool_size : 3,
+        strides : 3
     }];
 
-
+var custommodel = [ {} ] ;
 // Intial co-ordinates for 2D Rendering
 var init_x = 110 , init_y = 20 ;
 //var input_x = 25 ;
@@ -137,9 +146,10 @@ var chart ;
        //elem.addEventListener('mouseover',showTicker(event),false);
             var two = new Two({
             type: Two.Types.canvas,
-             width: 1300, height: 900
+                width: 1300, height: 900,
+                domElement : document.getElementById('NN_park')
             // fullscreen:
-        }).appendTo(elem);
+        });
 
         var colors = [
             'rgb(255, 64, 64)',
@@ -189,7 +199,7 @@ var chart ;
                 circle.rotation = frameCount / 60;
             });
 
-            two.play();
+
             /*
 
              var theta = Math.PI * 2 * (frameCount / 60);
@@ -270,7 +280,7 @@ var chart ;
             //console.log(canvas_size.canvas_width) ;
             //console.log(canvas_size.canvas_height);
 
-            if(($scope.ptype === 'Data Classification')||($scope.ptype == 'MultiClass'))
+            if(($scope.ptype == 'Data Classification')||($scope.ptype == 'MultiClass'))
             {
                 addinputparameters();
                 for(i=0;i<layers;++i)
@@ -328,7 +338,7 @@ var chart ;
                 }*/
             }
 
-            else if($scope.ptype === 'Time Series')
+            else if($scope.ptype == 'Time Series')
             {
                 var rectcent_x = 0,  height = 70, width = 70, rectcent_y = 580, diff, neuron_subset, subset_max ;
                 //$scope.LSTM_graphic();
@@ -414,6 +424,11 @@ var chart ;
                     }
 
                 }
+
+            }
+
+            else if($scope.ptype == 'Image Classification')
+            {
 
             }
             two.update();
@@ -765,7 +780,8 @@ var chart ;
                      dropouts : droputs,
                      filename : $scope.filename,
                      user : $scope.username,
-                     epochs : $scope.int_epoch
+                     epochs : $scope.int_epoch,
+                     neural_net : nn_model
                  };
                  /*  params1[0] = params.framework ;
                   params1[1] = params.type ;
@@ -945,7 +961,34 @@ var chart ;
         }
 
         function DialogController($scope, $mdDialog, $mdToast,layers, ptype) {
-
+            $scope.ConvNetlayers_total = 4 ;
+            $scope.Percplayers_total = 3 ;
+            $scope.layers = [
+                'Dense',
+                'LSTM',
+                'Conv1D',
+                'Conv2D',
+                'Conv3D',
+                'MaxPool1D',
+                'MaxPool2D',
+                'MaxPool2D',
+                'Conv2DT',
+                'Conv3DT',
+                'AvgPool1D',
+                'AvgPool2D',
+                'AvgPool2D',
+                'UpSample1D',
+                'UpSample2D',
+                'UpSample3D',
+                'ZeroPadding1D',
+                'ZeroPadding2D',
+                'ZeroPadding3D',
+                'Attention',
+                'MultiHeadAttention',
+                'Concatenate',
+                'Add'
+            ];
+            $scope.convlayer = [ 'Conv2D', 'MaxPool2D' ] ;
             $scope.ActNeuronPara = [
                 {
                     no_percp : 2,
@@ -954,27 +997,51 @@ var chart ;
             ];
             $scope.ConvParam = [
                 {
+                    type : 'Conv2D',
                     filters : 32,
-                    kernel_size : 3
+                    kernel : 3
                 }
             ];
-            if(ptype === 'Data Classification')
+            //console.log(ptype);
+            if((ptype == 'Data Classification')||(ptype == 'Time Series')||(ptype == 'MultiClass'))
             {
 
-            }
-            else if(ptype === 'Image Classification')
-            {   var i ;
-                for (i=0;i<convlayers_default;++i)
+                for(i=0;i<layers;++i)
                 {
-
+                    $scope.ActNeuronPara[i] = {} ;
+                    $scope.ActNeuronPara[i].type = 'Perceptron' ;
+                    $scope.ActNeuronPara[i].no_percp = neurons_list[i];
+                    $scope.ActNeuronPara[i].Dropout = droputs[i] ;
                 }
             }
+            else if(ptype == 'Image Classification')
+            {   var i ;
+                for (i=0;i<$scope.ConvNetlayers_total;++i)
+                {
+                    $scope.ConvParam[i] = {};
+                    $scope.ConvParam[i].type = conv_params_default[i].type ;
+                    if(conv_params_default[i].type == 'Conv2D')
+                    {
+                        $scope.ConvParam[i].filters = conv_params_default[i].filters ;
+                        $scope.ConvParam[i].kernel = conv_params_default[i].kernel ;
+                    }
 
-            for(i=0;i<layers;++i)
-            {
-                $scope.ActNeuronPara[i] = {} ;
-                $scope.ActNeuronPara[i].no_percp = neurons_list[i];
-                $scope.ActNeuronPara[i].Dropout = droputs[i] ;
+                    else if(conv_params_default[i].type == 'MaxPool2D')
+                    {
+                        $scope.ConvParam[i].pool_size = conv_params_default[i].pool_size ;
+                        $scope.ConvParam[i].strides = conv_params_default[i].strides ;
+                    }
+
+                }
+
+                for(i=0;i<layers;++i)
+                {
+                    $scope.ActNeuronPara[i] = {} ;
+                    $scope.ActNeuronPara[iIndex].type = 'Perceptron' ;
+                    $scope.ActNeuronPara[i].no_percp = neurons_list[i];
+                    $scope.ActNeuronPara[i].Dropout = droputs[i] ;
+                }
+                //console.log($scope.ConvParam);
             }
             //console.log(neurons_list) ;
             //console.log($scope.ActNeuronPara) ;
@@ -989,35 +1056,105 @@ var chart ;
             };
 
             $scope.answer = function() {
+                console.log('answer')
                 while(neurons_list.length>0)
                 {
                     neurons_list.pop();
                 }
-                for(i=0;i<layers;++i) {
-                    neurons_list[i] = Number($scope.ActNeuronPara[i].no_percp);
-                    droputs[i] = Number($scope.ActNeuronPara[i].Dropout);
-                    //console.log($scope.ActNeuronPara[i].no_percp);
-                    //console.log(neurons_list[i])
+
+                if((ptype == 'Data Classification')||(ptype == 'Time Series')||(ptype == 'MultiClass'))
+                {
+                    for(i=0;i<layers;++i) {
+                        neurons_list[i] = Number($scope.ActNeuronPara[i].no_percp);
+                        droputs[i] = Number($scope.ActNeuronPara[i].Dropout);
+                        //console.log($scope.ActNeuronPara[i].no_percp);
+                        //console.log(neurons_list[i])
+                    }
+                    if(neurons_list.includes(0))
+                    {
+                        $mdToast.show($mdToast.simple()
+                            .textContent("Invalid hyperparameters selection").position('top right').hideDelay(3500));
+                    }
+
+                    else
+                    {
+                        var n = neurons_list ;
+                        //console.log(neurons_list);
+                        addlayer(Number(layers),n);
+                        //console.log(neurons_list);
+                        //console.log(typeof layers);
+                        //console.log(neurons_list);
+                        $mdDialog.hide();
+                    }
                 }
+
+                else if(ptype == 'Image Classification')
+                {
+                    var model = $scope.ConvParam.concat($scope.ActNeuronPara) ;
+                    console.log(model) ;
+                    console.log($scope.ConvParam) ;
+                    console.log($scope.ActNeuronPara) ;
+
+
+                    $mdDialog.hide({
+                        model : model
+                    });
+                }
+
                 //console.log(neurons_list);
 
-                if(neurons_list.includes(0))
-                {
-                    $mdToast.show($mdToast.simple()
-                        .textContent("Invalid hyperparameters selection").position('top right').hideDelay(3500));
-                }
 
-                else
-                {
-                    var n = neurons_list
-                    //console.log(neurons_list);
-                    addlayer(Number(layers),n);
-                    //console.log(neurons_list);
-                    //console.log(typeof layers);
-                    //console.log(neurons_list);
-                    $mdDialog.hide();
-                }
             };
+
+            $scope.ChangeSeqLength = function(type)
+            {
+                if(type == 'Conv')
+                {
+                    if($scope.ConvNetlayers_total > $scope.ConvParam.length)
+                    {
+                        var iIndex ;
+                        for(iIndex=$scope.ConvParam.length;iIndex<$scope.ConvNetlayers_total;++iIndex)
+                        {
+                            $scope.ConvParam[iIndex] = {};
+                            $scope.ConvParam[iIndex].type = 'Conv2D' ;
+                            $scope.ConvParam[iIndex].filters = 32;
+                            $scope.ConvParam[iIndex].kernel = 3;
+                            $scope.ConvParam[iIndex].pool_size = 3 ;
+                            $scope.ConvParam[iIndex].strides = 3 ;
+                            $scope.ConvParam[iIndex].Dropout = 0 ;
+                            $scope.ConvParam[iIndex].activation = 'relu' ;
+
+                        }
+                    }
+
+                    else if($scope.ConvNetlayers_total < $scope.ConvParam.length)
+                    {
+                        $scope.ConvParam.splice($scope.ConvNetlayers_total,$scope.ConvParam.length-$scope.ConvNetlayers_total) ;
+                    }
+                    //console.log($scope.ConvParam) ;
+                }
+                else if(type == 'Perceptron')
+                {
+                    if($scope.ActNeuronPara.length<$scope.Percplayers_total)
+                    {
+                        var iIndex;
+
+                        for(iIndex=$scope.ActNeuronPara.length;iIndex<$scope.Percplayers_total;++iIndex)
+                        {
+                            $scope.ActNeuronPara[iIndex] = {} ;
+                            $scope.ActNeuronPara[iIndex].type = 'Perceptron' ;
+                            $scope.ActNeuronPara[iIndex].no_percp = 4    ;
+                            $scope.ActNeuronPara[iIndex].Dropout = 0 ;
+                        }
+                    }
+
+                    else if($scope.ActNeuronPara.length>$scope.Percplayers_total)
+                    {
+                        $scope.ActNeuronPara.splice($scope.Percplayers_total,$scope.ActNeuronPara.length-$scope.Percplayers_total);
+                    }
+
+                }
+            }
         }
 
         $scope.neurons_dialog = function(ev)
@@ -1042,6 +1179,9 @@ var chart ;
                     ptype :$scope.ptype
 
                 }
+            }).then(function(response){
+                    nn_model  = response.model ;
+                    console.log(nn_model) ;
             })
 
         };
@@ -1099,7 +1239,7 @@ var chart ;
             $scope.Reloadparams = function(i)
             {
                 //console.log('index:\t' + index);
-                console.log("Reloadingparams")
+                console.log("Reloadingparams");
                 $scope.layer = $scope.NNmodels[i].layers ;
                 neurons_list = $scope.NNmodels[i].neurons ;
                 $scope.ptype = $scope.NNmodels[i].ptype ;
