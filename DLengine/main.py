@@ -1537,7 +1537,7 @@ def tf_cnn(parameters):
                     #Scenario
                     dataset_case = 0
         # Getting train, dev and validation  dataset
-        toelectronmain(dataset_case)
+        #toelectronmain(dataset_case)
 
 
 
@@ -1545,15 +1545,6 @@ def tf_cnn(parameters):
         # ==== Create temporary directory structure ======= ####
         #Uncomment the line below for final code
         train_dir , test_dir, val_dir, classes_list = prepare_dataset(dataset_case)
-
-
-
-        #tv_split = test_split + val_split
-        #train_ds = image_dataset_from_directory(train_dir,validation_split=val_split,subset="training",seed=123,batch_size=32)
-        #val_ds = image_dataset_from_directory(train_dir,validation_split=val_split,subset="validation",seed=123,batch_size=32)
-        #print(train_ds)
-        #print(test_ds)
-
 
 
     except Exception as e:
@@ -1643,7 +1634,7 @@ def tf_cnn(parameters):
     toelectronmain(testset.classes)
     cm = confusion_matrix(test_set.classes,predictions,test_set.class_indices.keys())
     toelectronmain(cm)
-    #shutil.rmtree('temp')
+    shutil.rmtree('temp')
 
 
 def pyt_preprocessing(file, parameters):
@@ -1729,6 +1720,39 @@ def pyt_preprocessing(file, parameters):
         toelectronmain(e)
         #with open('debug.json', 'w') as fp:
         #    json.dump(str(e), fp)
+class Conv_class(nn.Module):
+    def __init__(self, features,classifier):
+        super(Conv_class, self).__init__()
+        self.features = nn.Sequential(*features)
+        self.classifier = nn.Sequential(*classifier)
+        #self.linear = False
+        self.relu = nn.ReLU()
+    '''
+    def forward(self, x):
+        self.linear = False
+        for iIndex in range(len(self.model)):
+            if(str(self.model[iIndex]).find("Linear")!=-1 and self.linear == False):
+                if(self.model[iIndex].in_features != x.size()[1]):
+                    lin = nn.Linear(x.size()[1],self.model[iIndex].in_features)
+                    lin = lin.to(device)
+                    x = self.relu(lin(x))
+                    self.linear = True
+            x = self.model[iIndex](x)
+        return x
+        '''
+    def forward(self,x):
+        x = self.features(x)
+        print(x)
+        print(x.shape)
+        x = x.reshape(x.size(0),-1)
+        print(x)
+        print(x.shape)
+        self.linear = nn.Linear(x.size(1),self.classifier[0].in_features)
+        print(self.linear)
+        self.linear = self.linear.to(device)
+        x = self.relu(self.linear(x))
+        x = self.classifier(x)
+        return(x)
 
 
 class Dataset(Dataset):
@@ -2606,7 +2630,205 @@ def pyt_textpredict(parameters):
     pass
 
 def pyt_cnn(parameters):
-    pass
+    project_path = 'D:/Instincts/AI-ML/Neural_Server/Datasets/kaggle/Wild animals'
+
+    src = 'D:/Instincts/AI-ML/Neural_Server/Datasets/kaggle/Wild animals/buffalo/001.jpg'
+    width , height = Image.open(src).size
+    print(height,width)
+
+    txfr = transforms.Compose([
+        transforms.Resize([height,width]),
+        transforms.RandomRotation(degrees=[-30,30]),
+        transforms.RandomVerticalFlip(),
+        transforms.RandomGrayscale(),
+        transforms.ToTensor(),
+        #transforms.Normalize([0.485,0.456,0.406],[0.229,0.224,0.225])
+        transforms.Normalize([0.5,],[0.5,])
+    ])
+
+
+
+    test_split = 0.1        # test_split = 0.0-0.3
+    val_split = 0.1         #validation_split = 0.0-0.3
+    train_split = 1-(test_split+val_split)
+    BATCH_SIZE = 9     #Batch_size/EPOCHS
+    EPOCHS = 50             #No of iterations : EPOCHS
+    alpha = 0.001         #Learning rate
+
+    '''
+    dataset = torchvision.datasets.ImageFolder(project_path,transform=txfr)
+    #print(dataset)
+    '''
+
+    #For testing CNN
+    train_data = torchvision.datasets.MNIST('data', train=True, download=True, transform=txfr)
+    val_data =torchvision.datasets.MNIST(root='data', train=False, download=True, transform=txfr)
+
+    '''
+    test_size = int(test_split*len(dataset))
+    val_size = int(val_split*len(dataset))
+    train_size = int(len(dataset) - (val_size + test_size))
+
+    train_data, val_data, test_data = random_split(dataset,[train_size,val_size,test_size])
+
+
+    train_classes = [dataset.targets[i] for i in train_data.indices]
+    print(Counter(train_classes))
+
+    target_list = []
+    for _, t in train_data:
+        target_list.append(t)
+        #print(t)
+
+    target_list = torch.tensor(target_list)
+    target_list = target_list[torch.randperm(len(target_list))]
+    '''
+
+
+
+    train_loader = DataLoader(train_data,shuffle=True,batch_size=BATCH_SIZE)
+    val_loader = DataLoader(train_data,shuffle=True,batch_size=BATCH_SIZE)
+
+    #Not used in test mode
+    #test_loader = DataLoader(train_data,shuffle=False,batch_size=1)
+
+
+    feature_layers = []
+    classifier_layers = []
+
+
+    feature_layers.append(nn.Conv2d(in_channels=1,out_channels=32,kernel_size=3,bias=True))
+    feature_layers.append(nn.BatchNorm2d(num_features=32))
+    feature_layers.append(nn.ReLU())
+    feature_layers.append(nn.Dropout2d(p=0.05))
+    feature_layers.append(nn.MaxPool2d(2,2))
+
+    feature_layers.append(nn.Conv2d(in_channels=32,out_channels=32,kernel_size=3,bias=True))
+    feature_layers.append(nn.BatchNorm2d(num_features=32))
+    feature_layers.append(nn.ReLU())
+    feature_layers.append(nn.Dropout2d(p=0.05))
+    feature_layers.append(nn.MaxPool2d(2,2))
+
+
+    feature_layers.append(nn.Conv2d(in_channels=32,out_channels=32,kernel_size=3,bias=True))
+    feature_layers.append(nn.BatchNorm2d(num_features=32))
+    feature_layers.append(nn.ReLU())
+    feature_layers.append(nn.Dropout2d(p=0.05))
+    feature_layers.append(nn.MaxPool2d(2,2))
+
+    #layers.append(nn.Flatten())
+    classifier_layers.append(nn.Linear(32,24))
+    classifier_layers.append(nn.ReLU())
+    classifier_layers.append(nn.Linear(24,16))
+    classifier_layers.append(nn.ReLU())
+    classifier_layers.append(nn.Linear(16,10))
+    classifier_layers.append(nn.LogSoftmax())
+
+
+    #model = nn.Sequential(*layers)
+    model = Conv_class(feature_layers,classifier_layers)
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)
+    model = model.to(device)
+    loss_func = nn.NLLLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+    #model.train()
+    y_pred = []
+    y_actual = []
+    #checkforreset()
+    for e in range(EPOCHS):
+        EPOCH_display = "Epoch :"+ str(e) +"/"+str(EPOCHS)
+        print(EPOCH_display)
+        train_epoch_loss = 0
+        val_epoch_loss = 0
+        train_epoch_acc = 0
+        val_epoch_acc = 0
+
+        model.train()
+        for X_train_batch, y_train_batch in train_loader:
+            with torch.no_grad():
+                gc.collect()
+                torch.cuda.empty_cache()
+            optimizer.zero_grad()
+            #print(X_train_batch)
+            X_train_batch, y_train_batch = X_train_batch.to(device), y_train_batch.to(device)
+            y_train_pred = model(X_train_batch).squeeze()
+            #print("training")
+            #print(y_train_batch)
+            #print(y_train_pred.shape)
+            #y_actual.append(y_train_batch.unsqueeze(1))
+            train_loss = loss_func(y_train_pred, y_train_batch)
+            train_loss.backward()
+            optimizer.step()
+            #print("y_train_pred: ")
+            #print(y_train_pred)
+            y_train_pred = torch.log_softmax(y_train_pred,dim = 1)
+            #print("y_pred_softmax: ")
+            #print(y_pred_softmax)
+            _, y_pred_tag = torch.max(y_train_pred, dim = 1)
+            #print("y_pred_tag: ")
+            #print(y_pred_tag)
+            correct_pred = (y_pred_tag == y_train_batch).float()
+            acc = correct_pred.sum()/len(correct_pred)
+            train_epoch_loss += train_loss.item()
+            train_epoch_acc += acc.item()
+            print(train_loss.item())
+            print(acc.item())
+            print("training...")
+        print(train_epoch_acc/len(train_loader))
+        print(train_epoch_loss/len(train_loader))
+        #print
+
+        model.eval()
+
+        with torch.no_grad():
+          for X_val_batch, y_val_batch in val_loader:
+            X_val_batch, y_val_batch = X_val_batch.to(device), y_val_batch.to(device)
+            y_val_pred = model(X_val_batch)
+            val_loss = loss_func(y_val_pred, y_val_batch)
+            y_pred_softmax = torch.log_softmax(y_val_pred,dim = 1)
+            _, y_pred_tag = torch.max(y_pred_softmax, dim = 1)
+            correct_pred = (y_pred_tag == y_val_batch).float()
+            acc = correct_pred.sum()/len(correct_pred)
+            val_epoch_loss += train_loss.item()
+            val_epoch_acc += acc.item()
+        print(val_epoch_acc/len(val_loader))
+        print(val_epoch_loss/len(val_loader))
+        #toelectronmain(EPOCH_display + "loss:  " + str(train_epoch_loss/len(train_loader)) + "\tVal loss:  " +str(val_epoch_loss/len(val_loader)))
+
+        #loss_stats["loss"].append(train_epoch_loss/len(train_loader))
+        #loss_stats["val_loss"].append(val_epoch_loss/len(val_loader))
+
+        #loss_stats["accuracy"].append(train_epoch_acc/len(train_loader))
+        #loss_stats["val_accuracy"].append(val_epoch_acc/len(val_loader))
+
+
+    '''
+    y_pred_list = []
+    y_test_list = []
+
+
+
+    with torch.no_grad():
+        for X_batch, y_batch in test_loader:
+            X_batch = X_batch.to(device)
+            y_batch = y_batch.to(device)
+            y_pred = model(X_batch)
+            y_pred_softmax = torch.log_softmax(y_pred,dim = 1)
+            _, y_pred_tag = torch.max(y_pred_softmax, dim = 1)
+            y_pred_list.append(y_pred_tag.cpu().numpy())
+            y_test_list.append(y_batch) = [ a.squeeze().tolist() for a in y_pred_list  ]
+    y_test_list = [ a.squeeze().tolist() for a in y_test_list  ]
+
+    #y_test_list = encoder.inverse_transform(y_test_list)
+    #y_pred_list = encoder.inverse_transform(y_pred_list)
+
+    #cm = confusion_matrix(y_test_list, y_pred_list,labels=category_array)
+    cm = confusion_matrix(y_test_list, y_pred_list)
+    print(cm)
+'''
 
 def find_extensions_headers():
     filepathflag = False
