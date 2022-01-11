@@ -71,10 +71,21 @@
 </head>
 
 <body ng-controller="AppCtrl">
+
+
+<!-- Body -->
+
 <div style="background-color: azure">
+
+
+  <!-- Side Navigation -->
+
   <section layout="row" >
     <md-sidenav id="SideNav" md-component-id="right" class="site-sidenav md-sidenav-left" md-whiteframe="4"
                 md-disable-backdrop style="transition: 0.5s"  md-disable-close-events="true" style="height: inherit; width: inherit">
+
+
+      <!-- SideNav Toolbar -->
       <md-toolbar>
         <div class="md-hue-2 md-toolbar-tools" style="background-color: royalblue ">
           <md-subheader class="md-toolbar-tools md-theme-indigo" style="background-color: royalblue; font-style: oblique;
@@ -87,40 +98,68 @@
           </md-button>
         </div>
       </md-toolbar>
+
+
+      <!-- List of Past projects -->
+
       <md-content>
         <md-list flex>
           <md-list-item class="md-theme-indigo" ng-repeat="NN in NNmodels"  md-whiteframe="6"
                         style="margin: 7%; width: auto; height: auto">
             <div class="md-list-item-text"  layout="column" >
               <md-content layout="row">
+
                 <md-button class="md-fab " style="background-color: snow; align-items: center; align-self: center">
                   <img  ng-src="{{ images[$index] }}" style="align-self: center; width: 75%; height: 75%" >
                 </md-button>
 
                 <md-content layout="column" style="background-color: snow">
+
+                  <!-- Model Name/Dataset Name -->
+
                   <h6 style="align-content: center;  padding-bottom: 5%; margin-bottom: 0%; padding-top: 5%;
                                 margin-top: 0%; font-style: oblique"> &ensp; &ensp;  {{ NN.fliename }} </h6>
+
                   <md-content layout="row">
                     <h5 style="padding-top: 5%; margin-top: 0%;padding-bottom: 5%; align-self: center;
                                 margin-bottom: 0%"> <b> &ensp;Type : &ensp; {{ NN.ptype }} &ensp; </b> </h5>
                     <h5 style="padding-top: 5%; margin-top: 0%; padding-bottom: 5%; align-self: center;
                                 margin-bottom: 0%"> <b>Framework : &ensp; {{ NN.framework }}</b></h5>
                   </md-content>
+
                   <p style="padding-bottom: 5%; margin-bottom: 0%; padding-top: 5%;margin-top: 0%;
                                         font-size: smaller">
                     &ensp;{{ NN.date }}  </p>
+
                   <div layout="row" style="align-items: flex-end; padding-top: 0%; border-style: hidden ">
+
+
+                    <!-- Save Report :
+                            Weights Dimension etc
+                            in an Excel SpreadSheet -->
                     <md-button class="md-fab md-mini" style="background-color: snow;
                                              border-style: hidden; outline: snow solid; box-shadow: none" ng-click="downloadreport($index)"
                                ng-href="{{ excelURL  }}">
                       <md-icon md-svg-src="assets/images/download.svg"> </md-icon>
                       <md-tooltip>  Download Report  </md-tooltip>
                     </md-button>
+
+
+                    <!-- Reload hyper-params used for this model -->
                     <md-button class="md-fab md-mini" style="background-color: snow;
                                              border-style: hidden; outline: snow solid; box-shadow: none " ng-click="Reloadparams($index)">
-                      <md-tooltip>  Load  </md-tooltip>
+                      <md-tooltip>  Re-train this model on current database </md-tooltip>
                       <md-icon md-svg-src="assets/images/open.svg"></md-icon>
                     </md-button>
+
+                    <!-- Reload saved weights for the model -->
+                    <md-button class="md-fab md-mini" style="background-color: snow;
+                                             border-style: hidden; outline: snow solid; box-shadow: none " ng-click="Reloadparams($index)">
+                      <md-tooltip>  Evaluate model on current database  </md-tooltip>
+                      <md-icon md-svg-src="assets/images/open.svg"></md-icon>
+                    </md-button>
+
+                    <!-- Delete particular model -->
                     <md-button class="md-fab md-mini" style="background-color: snow;
                                              border-style: hidden; outline: snow solid; box-shadow: none" ng-click="DeleteDoc($index)" >
                       <md-tooltip> Delete </md-tooltip>
@@ -128,26 +167,45 @@
                     </md-button>
                   </div>
                 </md-content>
+
               </md-content>
+
               <md-divider></md-divider>
+
+
             </div>
           </md-list-item>
         </md-list>
       </md-content>
     </md-sidenav>
   </section>
+
+
+  <!-- Main Section -->
+
   <md-content style="transition: margin-left .5s" id="Main">
     <md-toolbar class="md-hue-1">
       <div class="md-toolbar-tools">
+
+
+        <!-- History -->
+
         <md-button class="md-icon-button" aria-label="History" ng-click="navToggle()">
           <md-icon md-svg-icon="assets/images/list.svg"></md-icon>
         </md-button>
         <h3 flex md-truncate></h3>
+
+
+        <!-- MBD -->
+
         <md-button class="md-icon-button" aria-label="NNPlayground" ng-click="OpenPlayGnd()">
           <md-icon md-svg-icon="assets/images/Playground.svg"
         </md-button>
       </div>
     </md-toolbar>
+
+
+
     <!--
     <div layout="column">
       <md-toolbar style="background-color:#ffffff" >
@@ -197,17 +255,25 @@
     </div>
     -->
     <div layout="row">
-      <md-input-container>
-        <input  type="file"  id="xls_file" name="file" ng-disabled="hyperpara_disabled">
-        <md-button class="md-raised md-primary  " ng-click="addexcel()" ng-disabled="hyperpara_disabled">{{Upload_btn}}</md-button>
-        <md-progress-linear ng-disabled="progressivebar" class="md-hue-2" md-mode="indeterminate"></md-progress-linear>
-      </md-input-container>
 
+
+      <!-- Input Files here -->
+
+      <section layout="column">
+        <md-input-container>
+          <input  type="file"  id="xls_file" name="file" ng-disabled="hyperpara_disabled">
+          <md-button class="md-raised md-primary  " ng-click="addexcel()" ng-disabled="hyperpara_disabled">
+            {{Upload_btn}}
+          </md-button>
+          <md-progress-linear ng-disabled="progressivebar" class="md-hue-2" md-mode="indeterminate">
+          </md-progress-linear>
+        </md-input-container>
+      </section>
 
 
       <!-- Framework -->
-      <md-input-container>
 
+      <md-input-container>
         <label>Preferred Framework</label>
         <md-select ng-model="frmwrk" style="min-width: 200px; >
                                 ng-change="AppCtrl.modelHasChanged = true">
@@ -217,10 +283,12 @@
         </md-select>
       </md-input-container>
 
-      <!-- NN Type -->
-      <md-input-container>
 
-        <label>Type of Neural Network</label>
+
+      <!-- NN Task Type -->
+
+      <md-input-container>
+        <label>Type of Task</label>
         <md-select ng-model="ptype" ng-change="LSTM_graphic()" style="min-width: 200px; >
                                 ng-change="AppCtrl.modelHasChanged = true">
           <md-option ng-repeat="ptype in strlist_ptype" ng-value="ptype">
@@ -229,8 +297,13 @@
         </md-select>
       </md-input-container>
 
-      <!-- Numbers of layers and neurons in the neural network -->
+      <!-- Sequential Network Modelling -->
+
       <md-input-container>
+
+
+        <!-- No of layers in MLP -->
+
         <label>No of Hidden Layers</label>
         <md-select ng-model="layer" ng-change="changelayergraphic()" style="width: 160px; >
                             ng-change="AppCtrl.modelHasChanged = true">
@@ -238,6 +311,9 @@
             {{ layer }}
           </md-option>
         </md-select>
+
+
+        <!-- To Model Dev Dialog -->
 
         <md-button class="md-raised md-primary" ng-click="neurons_dialog($event)" layout="row" style="height: 28px; width: 40px">
           <md-tooltip md-direction="bottom">Add neurons for each layer</md-tooltip>
@@ -250,32 +326,94 @@
 
     </div>
 
-    <div ng-show="!progressivebar1">
+    <div>
+      <!-- Upload Dataset Folder -->
+      <md-content layout="row">
+
+        <!-- Upload Image Database button -->
+
+        <section>
+          <md-button class="md-fab md-mini"  style="background-color: #1976D2; color: #fafafa" ng-click ="adddataset()" >
+            <md-tooltip>
+              {{ Upload_db }}
+            </md-tooltip>
+            <md-icon md-svg-src="assets/images/folder.svg"> </md-icon>
+          </md-button>
+
+        </section>
+
+
+        <!-- Input Files here -->
+
+        <section layout="column">
+          <md-input-container>
+            <input  type="folder"  id="xls_file" name="file" ng-disabled="hyperpara_disabled">
+            <md-button class="md-raised md-primary  " ng-click="addexcel()" ng-disabled="hyperpara_disabled">
+              {{Upload_btn}}
+            </md-button>
+            <md-progress-linear ng-disabled="progressivebar" class="md-hue-2" md-mode="indeterminate">
+            </md-progress-linear>
+          </md-input-container>
+        </section>
+
+
+      </md-content>
+    </div>
+
+
+    <!-- Message/Display Board -->
+
+    <div ng-show="!progressivebar1" >
       <md-progress-linear md-mode="query" ng-show="!progressivebar1"></md-progress-linear>
       <div class="bottom-block" style="display: block;display: inline-block;margin-top: 10px;padding: 25px;font-size: 1em; border: 2px solid #aad1f9 ; background-color: rgba(255, 235, 169, 0.25);height: 40px; width: 100%;">
         <span> {{ Display_Message }}</span>
       </div>
     </div>
 
+    <!-- Wrapper -->
     <div class="wrapper" layout="row">
+
+
+
       <!-- Tuning Hyperparameters -->
+
       <div layout="column" layout-sm="row" layout-align="left center" layout-wrap>
+
+        <!-- Control Buttons -->
+
         <section style=" margin-bottom: 20px; margin-left: 0%; padding-left: 0%; border: none">
+
+
+
+          <!-- Hyperparameter Controls -->
           <div class="nn_controls" layout="row" layout-sm="row"  layout-wrap style="margin: 0%; padding: 0%" layout-align="left center">
-            <md-button class="md-fab md-ink-rippple scrolling play" ng-click='play()'  ng-disabled="Isplaydisabled" aria-label="Play"
+
+
+            <!-- Play Button -->
+
+            <md-button class="md-fab md-ink-rippple scrolling play" ng-click='play()'
+                       ng-disabled="Isplaydisabled" aria-label="Play"
                        style="background: #3CC09A; height: 50px; width: 50px; margin-left: 0px; margin-right: 20px" ng-show="showplay">
               <md-tooltip md-direction="bottom">{{play_tooltip}}</md-tooltip>
               <md-icon md-svg-src="assets/images/play-button-svgrepo-com.svg">
               </md-icon>
             </md-button>
-            <md-button class="md-fab md-ink-rippple scrolling reset" ng-click='reset()' ng-disabled="Isresetdisabled" aria-label="Restart"
+
+
+            <!-- Reset/Stop Button -->
+
+            <md-button class="md-fab md-ink-rippple scrolling reset" ng-click='reset()'
+                       ng-disabled="Isresetdisabled" aria-label="Restart"
                        style="background: #CD5C5C; height: 50px; width: 50px" ng-show="showreset">
               <md-tooltip md-direction="bottom">{{stop_tooltip}}</md-tooltip>
               <md-icon md-svg-src="assets/images/arrow.svg"></md-icon>
             </md-button>
             </div>
         </section>
+
+
         <!-- Learning Rate -->
+
         <section>
           <span>Learning Rate</span>
           <md-input-container>
@@ -284,7 +422,10 @@
           </md-input-container>
         </section>
         <md-divider></md-divider>
+
+
         <!-- Batch Size -->
+
         <section layout="column">
           <span>Batch Size</span>
           <md-content layout="row" style="background: #ddd">
@@ -294,11 +435,15 @@
               </md-slider>
             </md-slider-container>
             <md-input-container >
-              <input type="number" min="1" max="150" ng-model="int_Batch" aria-label="blue" aria-controls="blue-slider" ng-disabled="hyperpara_disabled">
+              <input type="number" min="1" max="150" ng-model="int_Batch" aria-label="blue" aria-controls="blue-slider"
+                     ng-disabled="hyperpara_disabled">
             </md-input-container >
           </md-content>
         </section>
+
+
         <!-- EPOCHS -->
+
         <section layout="column">
           <span>Epochs</span>
           <md-content layout="row" style="background: #ddd">
@@ -308,11 +453,15 @@
               </md-slider>
             </md-slider-container>
             <md-input-container >
-              <input type="number" min="1" max="300" ng-model="int_epoch" aria-label="blue" aria-controls="blue-slider" ng-disabled="hyperpara_disabled">
+              <input type="number" min="1" max="300" ng-model="int_epoch" aria-label="blue" aria-controls="blue-slider"
+                     ng-disabled="hyperpara_disabled">
             </md-input-container >
           </md-content>
         </section>
+
+
         <!-- Optimization -->
+
         <section style="width: 100%; margin-left: 0%; margin-right: 0%; border: none">
           <md-input-container style="width: 100%; margin-left: 0%; margin-right: 0%" >
             <label style="width: inherit">Optimizer</label>
@@ -325,32 +474,50 @@
           </md-input-container>
         </section>
         <md-divider></md-divider>
-        <!-- Train -Test -Valid Split -->
-        <section>
-          <span >Test Split</span>
 
+
+        <!-- Train -Test -Valid Split -->
+
+        <!-- Train Split -->
+        <section>
+          <md-slider-container>
+          <span >Test Split</span>
           <md-input-container>
             <label>Range : 0.01 - 0.3</label>
-            <input type="number" min="0.01" max="0.3" ng-model="flt_testsplit" aria-label="blue" aria-controls="blue-slider" ng-disabled="hyperpara_disabled">
+            <input type="number" min="0.01" max="0.3" ng-model="flt_testsplit" aria-label="blue"
+                   aria-controls="blue-slider" ng-disabled="hyperpara_disabled||disabletestsplit">
           </md-input-container >
           </md-slider-container>
         </section>
         <md-divider></md-divider>
+
+
+        <!-- Val Split -->
         <section>
+          <md-slider-container>
           <span >Val Split</span>
           <md-input-container>
             <label>Range : 0.01 - 0.3</label>
-            <input type="number" min="0.01" max="0.3" ng-model="flt_vldsplit" aria-label="blue" aria-controls="blue-slider" ng-disabled="hyperpara_disabled">
+            <input type="number" min="0.01" max="0.3" ng-model="flt_vldsplit" aria-label="blue"
+                   aria-controls="blue-slider" ng-disabled="hyperpara_disabled||disablevalsplit">
           </md-input-container >
           </md-slider-container>
         </section>
         <md-divider></md-divider>
       </div>
+
+      <!-- Central Division -->
+
       <div layout="column" layout-sm="row" layout-align="center center">
         <md-progress-linear ng-disabled="progressivebar2" md-mode="indeterminate"></md-progress-linear>
         <div ng-cloak  layout-align="left center">
+
+
+          <!-- Tabs for Charts and Results -->
           <md-content  ng-show="showgraph">
             <md-tabs class="md-raised md-primary" md-center-tabs md-dynamic-height>
+
+              <!-- Metrics Line Chart -->
               <md-tab label="Model Metrics" style="height: 85%" class="_md ng-scope md-active">
                 <md-content class="md-padding" layout="column">
                   <p>Loss and Accuracy Plot for your model</p>
@@ -359,6 +526,8 @@
                   </div>
                 </md-content>
               </md-tab>
+
+              <!-- Results on the Test Set ConfusionMatrix/ Predcted Value Chart -->
               <md-tab label="Test Set Analysis" style="height: 85%" class="_md ng-scope md-active">
                 <md-content class="md-padding" layout="column">
                   <p >Predicted Results of the Neural Network</p>
@@ -367,6 +536,8 @@
                   </div>
                 </md-content>
               </md-tab>
+
+              <!-- Python training script -->
               <md-tab label="Auto Generated Code">
                 <md-content>
                   <div class="padded" md-whiteframe="1"  layout layout-align="center center">
@@ -377,6 +548,8 @@
             </md-tabs>
           </md-content>
         </div>
+
+        <!-- SVG/Canvas for Neural Networks Viz -->
         <svg id="NN_park" style="background:#FFEFFE; height: 100%; width: 100%; overflow: auto"></svg>
       </div>
     </div>
