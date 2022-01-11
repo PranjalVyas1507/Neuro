@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html ng-app="NNapp">
+<head lang="en">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../bower_components/angular-material/angular-material.min.css">
+    <!-- Angular Material Dependencies -->
+    <script src="../../bower_components/angular/angular.min.js"></script>
+    <script src="../../bower_components/angular-animate/angular-animate.min.js"></script>
+    <script src="../../bower_components/angular-aria/angular-aria.min.js"></script>
+    <script src="../../bower_components/angular-material/angular-material.min.js"></script>
+    <script src="../../bower_components/angular-cookies/angular-cookies.min.js"></script>
+    <script src="../../assets/scripts/two.min.js"></script>
+    <script src="../../assets/scripts/NeuralModelling.js"></script>
+
+    <style>
+
+        .wrapper{
+            display:grid;
+            grid-template-columns: 22% 78%;
+            /*
+            grid-column-gap:1em;
+            grid-row-gap:1em;
+            */
+            grid-gap:1em;
+        }
+
+        .wrapper > div{
+            background:#eee;
+            padding:1em;
+        }
+        .wrapper > div:nth-child(odd){
+            background:#ddd;
+        }
+    </style>
+
+    <title>Neural Model Development</title>
+</head>
+<body ng-controller="NMDCtrl">
+    <div class="wrapper" layout="row">
+        <div layout="column" layout-sm="row" layout-align="left center" layout-wrap style="margin: 0%; padding: 0%">
+            <md-content>
+                <md-toolbar style="width: 100%; padding: 0%; margin: 0%; height: 1%">
+                    <h6>Basic Blocks</h6>
+                </md-toolbar>
+                <svg id='BasicLayers' style="background:#FFFFFF; height: 100%; width: 100%; overflow: auto"></svg>
+            </md-content>
+            <md-content>
+                <md-toolbar style="width: 100%; padding: 0%; margin: 0%; height: auto">
+                    <h6>Neural Networks</h6>
+                </md-toolbar>
+                <svg id='NNLayers' style="background:#FFFFFF; height: 100%; width: 100%; overflow: auto"></svg>
+            </md-content>
+
+            <md-content>
+                <md-toolbar style="width: 100%; padding: 0%; margin: 0%; height: auto">
+                    <h6>Scalers</h6>
+                </md-toolbar>
+                <svg id='ScalingLayers' style="background:#FFFFFF; height: 100%; width: 100%; overflow: auto"></svg>
+            </md-content>
+
+            <md-content>
+                <md-toolbar style="width: 100%; padding: 0%; margin: 0%; height: auto">
+                    <h6>Pretrained</h6>
+                </md-toolbar>
+                <svg id='PretrainedModels' style="background:#FFFFFF; height: 100%; width: 100%; overflow: auto"></svg>
+            </md-content>
+        </div>
+
+        <div layout="column" layout-sm="row" layout-align="center center">
+            <svg id='NMB' style="background:#FFFFFF; height: 100%; width: 100%; overflow: auto"></svg>
+        </div>
+
+    </div>
+</body>
+</html>
