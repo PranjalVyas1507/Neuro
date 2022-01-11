@@ -1004,8 +1004,7 @@ def data_preprocessing(file, parameters):
         except Exception as e:
             toelectronmain(e)
 
-            #with open('debug1.json', 'w') as fp:
-                #json.dump(str(e), fp)
+
     #checkforreset()
 
 def tf_ann(parameters):
@@ -1480,7 +1479,7 @@ def tf_cnn(parameters):
         # ======== Preprocessing ============== #
         #===== Understanding Directory strucuture ========= ###
 
-
+        dir = parameters['database_location']
 
         #1. Worst case scenario, no train/val/test divison or class based divsion,
         #need an label,image mapping based file
@@ -1556,8 +1555,8 @@ def tf_cnn(parameters):
 
 
     #======= Get traget images ========= #
-    #src = 'D:/Instincts/AI-ML/Neural_Server/Datasets/Academic Torrents/leafcounting/WeedCountImages_v1/1/0.png'
-    src =
+    src = 'D:/Instincts/AI-ML/Neural_Server/Datasets/Academic Torrents/leafcounting/WeedCountImages_v1/1/0.png'
+    #src =
     width , height = Image.open(src).size
     temp_dir = os.path.join(basepath,'temp')
     train_dir = os.path.join(temp_dir,'train')
@@ -2470,7 +2469,7 @@ def pyt_textclassify(parameters):
         PRE_TRAINED_MODEL_NAME = 'bert-base-cased'
         tokenizer  = BertTokenizer.from_pretrained(PRE_TRAINED_MODEL_NAME)
 
-        toelectronmain(df.info())
+        #toelectronmain(df.info())
         toelectronmain("Display_Message : Encoding target labels")
         try:
             le = LabelEncoder()
@@ -2630,7 +2629,8 @@ def pyt_textpredict(parameters):
     pass
 
 def pyt_cnn(parameters):
-    project_path = 'D:/Instincts/AI-ML/Neural_Server/Datasets/kaggle/Wild animals'
+    #project_path = 'D:/Instincts/AI-ML/Neural_Server/Datasets/kaggle/Wild animals'
+    project_path = parameters['database_location'].strip()
 
     src = 'D:/Instincts/AI-ML/Neural_Server/Datasets/kaggle/Wild animals/buffalo/001.jpg'
     width , height = Image.open(src).size
@@ -2648,19 +2648,19 @@ def pyt_cnn(parameters):
 
 
 
-    test_split = 0.1        # test_split = 0.0-0.3
-    val_split = 0.1         #validation_split = 0.0-0.3
+    test_split = int(parameters['testsplit'])        # test_split = 0.0-0.3
+    val_split = int(parameters['validsplit'])         #validation_split = 0.0-0.3
     train_split = 1-(test_split+val_split)
-    BATCH_SIZE = 9     #Batch_size/EPOCHS
-    EPOCHS = 50             #No of iterations : EPOCHS
-    alpha = 0.001         #Learning rate
+    BATCH_SIZE = int(parameters['batch_size'])     #Batch_size/EPOCHS
+    EPOCHS = int(parameters['epochs'])             #No of iterations : EPOCHS
+    alpha = float(parameters['learning_rate'])         #Learning rate
 
-    '''
+
     dataset = torchvision.datasets.ImageFolder(project_path,transform=txfr)
-    #print(dataset)
+    toelectronmain("Display_Message : Database Location" + project_path)
     '''
 
-    #For testing CNN
+    #For debugging purposes
     train_data = torchvision.datasets.MNIST('data', train=True, download=True, transform=txfr)
     val_data =torchvision.datasets.MNIST(root='data', train=False, download=True, transform=txfr)
 
@@ -2673,7 +2673,7 @@ def pyt_cnn(parameters):
 
 
     train_classes = [dataset.targets[i] for i in train_data.indices]
-    print(Counter(train_classes))
+    toelectronmain("Display_Message :"+Counter(train_classes))
 
     target_list = []
     for _, t in train_data:
@@ -2682,8 +2682,6 @@ def pyt_cnn(parameters):
 
     target_list = torch.tensor(target_list)
     target_list = target_list[torch.randperm(len(target_list))]
-    '''
-
 
 
     train_loader = DataLoader(train_data,shuffle=True,batch_size=BATCH_SIZE)
@@ -2729,10 +2727,26 @@ def pyt_cnn(parameters):
     model = Conv_class(feature_layers,classifier_layers)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(device)
+    #print(device)
     model = model.to(device)
     loss_func = nn.NLLLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+    #For debugging purposes
+    #optimizer = torch.optim.Adam(model.parameters(), lr=alpha, weight_decay=0.00008)
+    if(parameters['optimization']== 'SGD'):
+        optimizer = keras.optimizers.SGD(learning_rate=alpha)
+
+    elif(parameters['optimization']== 'Adam'):
+        optimizer = keras.optimizers.Adam(learning_rate=alpha)
+
+    elif(parameters['optimization']== 'Adagrad'):
+        optimizer = keras.optimizers.Adagrad(learning_rate=alpha)
+
+    elif(parameters['optimization']== 'RMSProp'):
+        optimizer = keras.optimizers.RMSprop(learning_rate=alpha)
+
+    elif(parameters['optimization']== 'Adamax'):
+        optimizer = keras.optimizers.Adamax(learning_rate=alpha)
 
     #model.train()
     y_pred = []
