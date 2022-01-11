@@ -1,14 +1,15 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, ipcMain, screen} = require('electron');
+const {app, BrowserWindow, ipcMain, screen, dialog} = require('electron');
 const nativeImage = require('electron').nativeImage ;
 const path = require('path');
 const { PythonShell } = require('python-shell');
 var fs = require('fs');
 const mongoose = require('mongoose');
+const util = require('util') ;
 
 require('./assets/scripts/Models/db');
 const user = mongoose.model('User');
-
+const readdir = util.promisify(fs.readdir) ;
 
 var options = {
   //args : ['args'],
@@ -16,12 +17,17 @@ var options = {
   scriptPath : path.join(__dirname,'/../Neuro/DLengine')
 };
 
+
+
 var pyscript = new PythonShell('main.py',options) ;
-var mainWindow, regWindow ;
+//var DScheck = new PythonShell('inspectDS.py',DSoptions);
+var mainWindow, regWindow, NNWindow ;
 
 //var returnobj = null ;    // object returned from python
 var params = {}, credentials = {}, weights = {}, result = {}, NeuralNet_history = {} ;
 var output, gen_code, code ;
+var datasetcase = 0 ;
+var train_contents, test_contents, val_contents ;
 
 //ipc and python flags
 var pyreturnflag = false ;
@@ -75,6 +81,30 @@ function createRegistrationWindow() {
 }
 
 
+function createPlaygroundWindow()
+{
+    const { width, height } = screen.getPrimaryDisplay().workAreaSize ;
+    NNWindow =  new BrowserWindow({
+        width: width,
+        height: height,
+        webPreferences: {
+            contextIsolation: true,
+            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: false,
+            enableRemoteModule: false
+        },
+        movable: false,
+        minimizable: false,
+        maximizable: false,
+        autoHideMenuBar: true,
+        icon: nativeImage.createFromPath(__dirname + "/assets/images/NeuroIcon.svg")
+    }) ;
+
+    NNWindow.loadFile('assets/html/NNPark.html') ;
+    };
+
+
+
 function startNeuro()
 {
     if(fs.existsSync('user.json'))
@@ -117,7 +147,7 @@ app.on('window-all-closed', function () {
 // code. You can also put them in separate files and require them here.
 
 ipcMain.on("toMain",function(event,args){
-    console.log(args);
+    //console.log(args);
   /*var options = {
     args : [args],
     pythonOptions : [ '-u ' ]
@@ -326,6 +356,26 @@ ipcMain.on('history',function(event, args) {
         }
             }
 });
+
+
+ipcMain.on('AddDatabase',function(event, args){
+    (async() =>{
+       //console.log(await opendialog((args))) ;
+        var results = await opendialog((args));
+        //console.log(results) ;
+        if(results.canceled == false)
+        {
+            get_databasecase(results.filePaths[0]);
+            console.log("datacase:\t"+dataset_case);
+        }
+    })() ;
+});
+
+ipcMain.on("OpenNNPark", function(event,args){
+    createPlaygroundWindow();
+});
+
+
 
 pyscript.on('message',function(message){
      //console.log(message);
@@ -555,10 +605,33 @@ async function retrieve_models()
 
 const async_retrieve = async () =>{
     await retrieve_models().then(()=>{
-        console.log("NeuralNet_history",NeuralNet_history);
+        //console.log("NeuralNet_history",NeuralNet_history);
         mainWindow.webContents.send('history',JSON.stringify(NeuralNet_history));
     })
 };
+
+
+
+async function opendialog(args)
+{
+    if(args == 'Upload_folder')
+    {
+        var dialog_options = {
+            title : "Upload Folder",
+            //defaultPath : app.getPath('Desktop'),
+            properties : [ 'openDirectory' ]
+        };
+        const dialog_resutls = await dialog.showOpenDialog(mainWindow, dialog_options) ;
+        return dialog_resutls ;
+    }
+
+    if(args == 'Upload_File')
+    {
+
+    }
+}
+
+
 
 function storelocal(NNmodel)
 {
@@ -582,6 +655,368 @@ function storelocal(NNmodel)
             console.log(results);
         }
     });
+}
+
+
+function get_databasecase(path)
+{
+    var directory_count = 0, image_count = 0;
+    //console.log(path) ;
+    fs.readdir(path,async function(err, files)
+    {
+        var i ;
+        if(!err)
+        {
+            //console.log(files) ;
+            for(i=0;i<files.length;++i)
+            {
+               if(Isfolder(path+'\\'+files[i]) === true)
+               {
+                   directory_count = directory_count + 1 ;
+               }
+
+               else if(Isimage(path+'\\'+files[i]) === true)
+                {
+                    image_count = image_count + 1 ;
+                }
+            }
+            //console.log("directory:"+directory_count) ;
+            //console.log("Images" + image_count) ;
+
+            await Promise.all([find_dataset_case(path,files,directory_count,image_count)]).then(()=>
+            {
+                try{
+                    mainWindow.webContents.send('dblocation',{folder : path ,
+                        dbcase : datasetcase});
+                }catch (err){
+                    console.log(err) ;
+                }
+            });
+            //console.log("get_databasecase:\t"+ dataset_case );
+
+        }
+
+
+    });
+    //console.log("Case outside callback:\t"+ dataset_case);
+}
+
+function Isimage(file)
+{
+    if(file.includes('.') === true)
+    {
+        //console.log(1);
+        if(fs.existsSync(file) && fs.lstatSync(file).isFile())
+        {
+            var tmp = file.split('.');
+            //console.log(tmp);
+            if((tmp[1]==='jpeg')||(tmp[1]==='png')||(tmp[1]==='jpg'))
+            {
+               //console.log(tmp[1]);
+                return true ;
+            }
+        }
+
+        return false ;
+    }
+
+}
+
+function PDP()
+{
+
+}
+
+function FeatureDistribution()
+{
+
+}
+
+
+function Isfolder(path)
+{
+    //console.log(path) ;
+    if(fs.existsSync(path) && fs.lstatSync(path).isDirectory())
+    {
+        return true ;
+    }
+
+    return false ;
+}
+
+
+function substringsearch(substr ,filelist,path)
+{
+    var index ;
+    //var filelist = await contains_folders(folder) ;
+    for(index=0;index<filelist.length;++index)
+    {
+        if(filelist[index].includes(substr))
+        {
+            return {search : true,
+              filename : filelist[index]
+            };
+        }
+    }
+    return false ;
+}
+
+function checkcontents(path,contents)
+{
+    var i/*, num_images, num_dir*/ ;
+    var images = [], dir = [] ;
+    //console.log(contents);
+    for(i=0;i<contents.length;++i)
+        {
+            //console.log(contents[i]);
+        if(Isfolder(path+"\\"+contents[i]) === true)
+        {
+            //num_dir = num_dir + 1;
+            dir[i] = contents[i] ;
+        }
+        else if(Isimage(path+"\\"+contents[i]) === true)
+        {
+            //num_images = num_images + 1 ;
+            images[i] = contents[i] ;
+            //console.log(images[i])
+        }
+    }
+    return { images : images,
+            directories : dir
+            }
+
+}
+
+
+async function find_dataset_case(path,files, num_directory, num_images)
+{
+    //console.log("Path fdc:\t"+path) ;
+    //var datasetcase = 0 ;
+    var traindir, testdir, valdir, devdir ;
+
+
+    traindir = substringsearch('train',files);
+    testdir = substringsearch('test',files);
+    valdir = substringsearch('val',files);
+    devdir = substringsearch('dev',files) ;
+
+    if(num_directory==0)
+    {
+        console.log("No sub-directories\n");
+
+        if(num_images<50)
+        {
+            datasetcase = 0 ;
+        }
+        else
+        {
+            datasetcase = 1 ;
+        }
+    }
+
+    else if((traindir.search === true)&&(Isfolder(path+'\\'+traindir.filename) === true))
+    {
+        var valc1 ;
+        datasetcase = 1 ;
+        //contains_folders(path,files,[])
+
+        if((testdir.search===true)&&(Isfolder(path+'\\'+testdir.filename) === true))
+        {
+
+            // --->> substringsearch(string,files,path)
+            // --->> getfilepathcontaining substring
+            // --->> readcontents ->> IsImage ->> IsFolder
+            // --->> compare with val folder and test folder if present
+            // --->> Provide dataset case (5 if subclasses-directories are present) or (6 if not present)
+
+            await Promise.all([async_walkdir(path+"\\"+traindir.filename,'train'),async_walkdir(path+"\\"+traindir.filename,'test')]);
+            datasetcase = datasetcase + 1 ;
+
+
+            //console.log(train_contents);
+
+            var trc1, ttc1 ;
+
+            if((train_contents != null)&&(test_contents != null))
+            {
+                trc1 = checkcontents(path+'\\'+traindir.filename,train_contents) ;
+                ttc1 = checkcontents(path+'\\'+testdir.filename,test_contents) ;
+            }
+            /*if(test_contents != null)
+            {
+
+            }*/
+
+            console.log(ttc1);
+            console.log(trc1);
+            if((valdir.search===true)&&(Isfolder(path+'\\'+valdir.filename) === true))
+            {
+                datasetcase = datasetcase + 1 ;
+                await Promise.all([async_walkdir(path+"\\"+valdir.filename,'val')]);
+
+                if(val_contents != null)
+                {
+                    valc1 = checkcontents(path+'\\'+devdir.filename,val_contents) ;
+                }
+            }
+            else if((devdir.search ===true)&&(Isfolder(path+'\\'+devdir.filename) === true))
+            {
+                datasetcase = datasetcase + 1 ;
+                //val_contents = async_walkdir(path+"\\"+devdir.filename);
+                await Promise.all([async_walkdir(path+"\\"+devdir.filename,'val')]);
+
+                if(val_contents != null)
+                {
+                    valc1 = checkcontents(path+'\\'+devdir.filename,val_contents);
+                }
+            }
+
+            if(arrequal(trc1.directories,ttc1.directories)&&(trc1.directories!=0))
+            {
+                console.log(trc1.directories);
+                console.log(ttc1.directories);
+                datasetcase = 2;
+                if(arrequal(trc1.directories,valc1.directories))
+                {
+                    datasetcase = datasetcase + 1 ;
+                }
+            }
+            else if(trc1.images.length>100 && ttc1.images.length>10)
+            {
+                datasetcase = 5;
+                if(val_contents != null)
+                {
+                    if(valc1.images.length>10)
+                    {
+                        datasetcase = 6 ;
+                    }
+                }
+            }
+
+
+        }
+        /*
+        else if(has_valfolder(files)== true )
+        {
+            datasetcase = datasetcase + 1 ;
+        }*/
+
+
+    }
+
+    else if(num_directory>1)
+    {
+            datasetcase = 4 ;
+    }
+
+    else datasetcase = 0 ;
+
+    //console.log("find_dataset_case:\t"+ datasetcase) ;
+    //return datasetcase ;
+}
+
+
+function arrequal(arr1, arr2)
+{
+    var arr_cmp = arr1.every(function(element,index)
+    {
+        return element === arr2[index] ;
+    });
+
+    if((arr1.length === arr2.length)&& arr_cmp)
+    {
+        return true ;
+    }
+
+    return false ;
+}
+
+function has_valfolder(files)
+{
+    /*
+    if((files.includes('val'))||(files.includes('valset'))||(files.includes('val set'))||substringsearch('val',files).search==true)
+    {
+        return true ;
+    }
+    else if((files.includes('validation'))||(files.includes('validationset'))||(files.includes('validation set')))
+    {
+        return true ;
+    }
+    else if((files.includes('dev'))||(files.includes('devset'))||(files.includes('dev set'))||substringsearch('dev',files).search==true)
+    {
+        return true ;
+    }*/
+
+    var valdir = substringsearch('val',files);
+    var devdir = substringsearch('dev',files);
+
+    if(valdir.search===true)
+    {
+        return valdir.filename ;
+    }
+    else if(devdir.search===false)
+    {
+        return devdir.filename ;
+    }
+
+    return false ;
+}
+
+const async_walkdir = async(path,settype) =>{
+    //console.log(path);
+   var dir_contents = await walkdirectory(path) ;
+        //console.log(settype);
+        if(settype ==='train')
+        {
+            train_contents = dir_contents;
+        }
+        else if(settype ==='test')
+        {
+            test_contents = dir_contents;
+        }
+        else if(settype ==='val')
+        {
+            val_contents = dir_contents;
+        }
+        else if(settype ==='dev')
+        {
+            dev_contents = dir_contents;
+        }
+        //console.log("Dir Contents");
+        //console.log(dir_contents);
+}
+
+
+async function walkdirectory(path)
+{
+    var contents, contents1 = [] ;
+    try
+    {
+        //console.log(path);
+        if(Isfolder(path) === true)
+        {
+           // console.log('isfolder');
+            contents = await readdir(path);
+        }
+        else
+        {
+            return null ;
+        }
+    }catch(err)
+    {
+        console.log(err) ;
+    }
+    if(contents == undefined)
+    {
+        console.log('undefined')
+    }
+    else
+    {
+        //console.log(typeof contents1);
+        contents1 = Array.from(Object.values(contents)) ;
+        return contents1 ;
+    }
+
 }
 
 process.on("uncaughtException",function(err){

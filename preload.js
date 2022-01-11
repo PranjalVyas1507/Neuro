@@ -28,7 +28,7 @@ contextBridge.exposeInMainWorld(
     "api", {
       send : function(channel,data) {
         //const validchannels = ["toMain", "headers" , "params"] ;
-        const validchannels = ["toMain", "paramstoMain", 'killscript', 'restart', 'deletedoc', 'history', 'credentials'] ;
+        const validchannels = ["toMain", "paramstoMain", 'killscript', 'restart', 'deletedoc', 'history', 'credentials', 'AddDatabase', 'readdir', "OpenNNPark"] ;
         if(validchannels.includes(channel))
         {
           ipcRenderer.send(channel,data);
@@ -36,7 +36,7 @@ contextBridge.exposeInMainWorld(
 
       },
       receive : function(channel,func){
-        const validchannels = ["fromMain", "Input_Features", "Display_Message", "Result", "Code", 'history', 'registered', 'restarted', 'deleted', 'Categories'] ;
+        const validchannels = ["fromMain", "Input_Features", "Display_Message", "Result", "Code", 'history', 'registered', 'restarted', 'deleted', 'Categories','dblocation'] ;
         if(validchannels.includes(channel))
         {
           //console.log(data);
