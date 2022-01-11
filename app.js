@@ -72,7 +72,7 @@ var call_from_play = false ;
 var chart ;
 
     angular.module('webapp', ['ngMaterial'])
-    .controller('AppCtrl', function($scope, $http, $mdDialog, $mdToast, $mdSidenav) {
+    .controller('AppCtrl', function($scope, $mdDialog, $mdToast, $mdSidenav) {
 
         //IntroDialog();
         /* if(registered === false)
@@ -94,6 +94,7 @@ var chart ;
         $scope.graph_datasets = [] ;
         $scope.pred_data = [] ;
         $scope.cm = [] ;
+        $scope.Upload_db = 'Upload\nDirectory' ;
 
         $scope.images = [] ;   $scope.filename = '';
         $scope.excelURL = '';
@@ -109,6 +110,7 @@ var chart ;
 
         $scope.Upload_btn = 'Upload' ;
         $scope.Upload_btn_disable = false ;
+        $scope.showInputFile = false ;
 
         // Initial Hyperparameters
         $scope.flt_LR = 0.0003 ;
@@ -127,9 +129,12 @@ var chart ;
         $scope.hyperpara_disabled = false ;
         $scope.showgraph = false ;
         $scope.progressivebar = true ;
+        $scope.progressivebar1 = true ;
         $scope.progressivebar2 = true ;
         $scope.showplay = true ;
         $scope.showreset = false ;
+        $scope.disabletestsplit = false ;
+        $scope.disablevalsplit = false ;
 
 
         $scope.play_tooltip = 'No File has been Uploaded' ;
@@ -140,12 +145,13 @@ var chart ;
         $scope.profile = 'assets/images/user.svg';
         $scope.NNmodels = {} ;
         $scope.Display_Message = 'Reading File.........' ;
+        $scope.Database_location = 'empty' ;
 
         var elem = document.getElementById('NN_park');
        // var elem = $("#NN-visualizer").getElementById("NeuralPark");
        //elem.addEventListener('mouseover',showTicker(event),false);
             var two = new Two({
-            type: Two.Types.canvas,
+            type: Two.Types.svg,
                 width: 1300, height: 900,
                 domElement : document.getElementById('NN_park')
             // fullscreen:
@@ -218,6 +224,7 @@ var chart ;
 
         }
 
+
          function showTicker(event){
              console.log("Ticker should be shown")
              var posx = event.clientX;
@@ -269,7 +276,7 @@ var chart ;
                 received_params = false ;
             }*/
             layers = parseInt(layers) + parseInt(1) ;
-            console.log(typeof layers);
+            //console.log(typeof layers);
             two.clear() ;
             var i,j ;
             neurons_total(layers,neurons);
@@ -399,6 +406,7 @@ var chart ;
                                     upline.linewidth = 6.75 ;
                                 }
                             }
+
                             else
                             {
                                 var upward_arrow = two.makePath(rectcent_x,(rectcent_y+(height/2)),(rectcent_x+width/4),(rectcent_y+(height/2)+8),(rectcent_x-width/4),(rectcent_y+(height/2)+8),false)
@@ -754,6 +762,7 @@ var chart ;
                  //console.log(final_headers);
                  $scope.stop_tooltip = 'Back' ;
                  $scope.Isresetdisabled = true ;
+                 $scope.progressivebar1 = false ;
                  $scope.progressivebar2 = false;
                  $scope.Upload_btn_disable = true ;
 
@@ -781,7 +790,8 @@ var chart ;
                      filename : $scope.filename,
                      user : $scope.username,
                      epochs : $scope.int_epoch,
-                     neural_net : nn_model
+                     neural_net : nn_model,
+                     database_location : $scope.database_location
                  };
                  /*  params1[0] = params.framework ;
                   params1[1] = params.type ;
@@ -857,6 +867,9 @@ var chart ;
                 $scope.Upload_btn_disable = false ;
                 $scope.Upload_btn = 'Upload' ;
                 $scope.Display_Message = '' ;
+                $scope.progressivebar1 = true ;
+                $scope.disabletestsplit = false ;
+                $scope.disablevalsplit = false ;
 
                 //$scope.
 
@@ -931,17 +944,29 @@ var chart ;
         $scope.adddataset = function()
         {
             // Import local folders(data-sets) to the application
+            window.api.send('AddDatabase','Upload_folder') ;
 
         };
 
-        $scope.LSTM_graphic = function()
+        $scope.taskChanged = function () {
+            switch ($scope.ptype)
+            {
+                case 'Data Classification' :    break ;
+                case 'Image Classification' :   break;
+                case 'Time Series' :    break;
+                case 'MultiClass' :     break;
+            }
+
+            LSTM_graphic() ;
+        };
+
+            function LSTM_graphic()
             {
                 var l = Number($scope.layer);
                 var n = neurons_list ;
                 addlayer(l,n);
                 //addlayer(default_layers,default_neurons) ;
             };
-
 
         $scope.changelayergraphic = function()
         {
@@ -1037,7 +1062,7 @@ var chart ;
                 for(i=0;i<layers;++i)
                 {
                     $scope.ActNeuronPara[i] = {} ;
-                    $scope.ActNeuronPara[iIndex].type = 'Perceptron' ;
+                    $scope.ActNeuronPara[i].type = 'Perceptron' ;
                     $scope.ActNeuronPara[i].no_percp = neurons_list[i];
                     $scope.ActNeuronPara[i].Dropout = droputs[i] ;
                 }
@@ -1257,6 +1282,12 @@ var chart ;
                 addlayer($scope.layer,neurons_list);
 
             };
+
+        $scope.Loadmodelweights = function(i)
+        {
+
+        }
+
         $scope.downloadreport = function(index)
         {
          // Excel Report for previous records
@@ -1489,8 +1520,8 @@ var chart ;
 
         $scope.DeleteDoc = function(index)
         {
-            console.log($scope.NNmodels[index]);
-            console.log($scope.NNmodels[index]._id);
+            //console.log($scope.NNmodels[index]);
+            //console.log($scope.NNmodels[index]._id);
             window.api.send('deletedoc',{
                 file : $scope.NNmodels[index].fliename,
                 date : $scope.NNmodels[index].date
@@ -1504,7 +1535,14 @@ var chart ;
 
             }).then(function(res){
 
-            })*/
+            })
+            */
+        };
+
+        $scope.OpenPlayGnd = function()
+        {
+            console.log("OpenPlayGnd");
+            window.api.send("OpenNNPark",0);
         };
 
         function IP_Header_Controller($scope, $mdDialog, headers, layers, problem_type) {
@@ -1685,7 +1723,10 @@ var chart ;
                 console.log("Chart Not Undefined");
                 chart.destroy();
             }
+
             $scope.progressivebar2 = true;
+            $scope.progressivebar1 = true ;
+
             var response = resultjson;
             var dataset_len ;
             console.log(response);
@@ -1876,6 +1917,46 @@ var chart ;
              }
          );
 
+         window.api.receive('dblocation', function(data)
+         {
+             //console.log(typeof data);
+            // console.log(data) ;
+
+             $scope.database_location = data.folder ;
+             console.log(data.folder);
+             console.log(typeof data.folder);
+
+             switch(data.dbcase)
+             {
+                 case 1 :   //Getfile() ; Ask for file_location donot retrieve file contents here
+                             setsplit('enable') ;
+                            break ;
+
+                 case 2 :
+                            setsplit('disable') ;
+                            break ;
+
+                 case 3 :   setsplit('disable') ;
+                            break ;
+
+                 case 4 :   setsplit('enable') ;
+                            break ;
+
+                 case 5 :  setsplit('disable') ;
+                            break ;
+
+                 case 6 :   setsplit('disable') ;
+                            break ;
+
+                 case 0 :   setsplit('enable') ;
+                            break ;
+
+                 default :  break ;
+             }
+                 //console.log($scope.database_location) ;
+                 //console.log(typeof $scope.database_location);
+         })  ;
+
          function get_canvas_size(n)
          {
             var canvas_width , canvas_height ;
@@ -1932,6 +2013,27 @@ var chart ;
          }*/
 
          //function
+
+          function Getfile()
+          {
+              $scope.showInputFile = true ;
+              AddExcel();
+          }
+
+          function setsplit(sw)
+          {
+              if(sw === 'disable')
+              {
+                  $scope.disabletestsplit = true ;
+                  $scope.disablevalsplit = true ;
+              }
+              else if(sw === 'enable')
+              {
+                  $scope.disabletestsplit = false ;
+                  $scope.disablevalsplit = false ;
+              }
+          }
+
 
         });
 /*
