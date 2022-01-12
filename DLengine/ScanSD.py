@@ -59,27 +59,31 @@ def seperate_num_cat(X):
 
 
 def feature_selection(X,y):
-    seperate_num_cat(X)
-    '''
-        chisquare analysis, pearson corellation and ANOVA
-        chisquare : categorial 2 categorical
-        pearson: numerical to numerical
-        ANOVA : numerical to categorical
-    '''
+    X_cat, X_num = seperate_num_cat(X)
+
+    if y.dtype == 'object':
+        pass
+
+    else y.dtype == 'int64':
+        pass
+
 
 def sk_ANOVA(X,y):
     if X.shape[1] > 5:
         k = int(0.8*X.shape[1])
-        X = SelectKBest(score_func=chi2,k=4).fit_transform(X, y)
+        X = SelectKBest(score_func=chi2,k=k).fit_transform(X, y)
 
     return X
-
 
 def sk_pearson(X,y):
     pass
 
 def sk_chi2(X,y):
-    pass
+    if X.shape[1] > 5:
+        k = int(0.8*X.shape[1])
+        X = SelectKBest(score_func=chi2,k=k).fit_transform(X, y)
+
+    return X
 
 
 def numerical_feature_distribution(X,y):
@@ -88,3 +92,7 @@ def numerical_feature_distribution(X,y):
 def categorical_feature_distribution(X):
     pass
     "Distribution of categorical datapoints"
+
+def merge_features(t : tuple[X1, X2, ...]):
+    X_concat = np.hstack(t)
+    return X_concat
