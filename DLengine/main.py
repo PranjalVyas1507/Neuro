@@ -2401,6 +2401,7 @@ def pyt_multiclass(parameters):
         y_pred_list = []
         y_test_list = []
 
+        model.eval()
         with torch.no_grad():
             for X_batch, y_batch in test_loader:
                 X_batch = X_batch.to(device)
@@ -2791,8 +2792,8 @@ def pyt_cnn(parameters):
             print(train_loss.item())
             print(acc.item())
             print("training...")
-        print(train_epoch_acc/len(train_loader))
-        print(train_epoch_loss/len(train_loader))
+        toelectronmain("Display_Message :" + train_epoch_acc/len(train_loader))
+        toelectronmain("Display_Message :"train_epoch_loss/len(train_loader))
         #print
 
         model.eval()
@@ -2819,12 +2820,12 @@ def pyt_cnn(parameters):
         #loss_stats["val_accuracy"].append(val_epoch_acc/len(val_loader))
 
 
-    '''
+
     y_pred_list = []
     y_test_list = []
 
 
-
+    model.eval()
     with torch.no_grad():
         for X_batch, y_batch in test_loader:
             X_batch = X_batch.to(device)
@@ -2840,9 +2841,34 @@ def pyt_cnn(parameters):
     #y_pred_list = encoder.inverse_transform(y_pred_list)
 
     #cm = confusion_matrix(y_test_list, y_pred_list,labels=category_array)
+
+    y_pred_list = [a.squeeze().tolist() for a in y_pred_list ]
+    y_pred_list = [round(a) for a in y_pred_list]
+    y_test_list = [a.squeeze().tolist() for a in y_test_list ]
+
+    toelectronmain("Display_Message :Generating Confusion Matrix")
     cm = confusion_matrix(y_test_list, y_pred_list)
-    print(cm)
-'''
+    #toelectronmain("Eror Encountered")
+    #check the data-types and convert lists to numpy arrays
+
+    loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
+
+    model_wnb = model.state_dict()
+    #checkforreset()
+    for i in range(len(model)):
+        w_n_b['layers'].append(str(model[i]))
+        if(str(model[i]).find("conv")!=-1):
+            str1 = str(i) + ".weight"
+            w_n_b['weights'].append(model_wnb[str1].tolist())
+            str1 = str(i) + ".bias"
+            w_n_b['biases'].append(model_wnb[str1].tolist())
+
+    with open('weights.json','w') as fp :
+        json.dump(w_n_b,fp)
+    with open('result.json', 'w') as fp:
+        json.dump(loss_stats, fp)
+    toelectronmain("Display_Message :Check Result")
+
 
 def find_extensions_headers():
     filepathflag = False
