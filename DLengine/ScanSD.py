@@ -7,8 +7,12 @@ import os
 import numpy as np
 import pandas as pd
 
+import numpy as np
+from sklearn.feature_selection import SelectKBest, f_classif, chi2, SelectPercentile
+from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
 
-def unittest_DS(X,y):
+
+def unittest_DS(X, y, key=None):
     pass
     '''
     X ---->  input features
@@ -30,9 +34,32 @@ def unittest_DS(X,y):
 
     '''
 
+def seperate_num_cat(X):
+    cat_column = []
+    num_column = []
+    for column in X.columns:
+        if (X[column].dtype == 'object'):
+            X[column] = X[column].astype('category')
+            X[column] = X[column].cat.codes
+            cat_column.append(column)
+        else:
+            if(X[column].dtype == 'int64'):
+                if(pd.Series(X[column]).nunique()/pd.Series(X[column]).count() <0.003):
+                    X[column] = X[column].astype('category')
+                    X[column] = X[column].cat.codes
+                    cat_column.append(column)
+                else:
+                    num_column.append(column)
+            else:
+                num_column.append(column)
+
+    X_cat = X.filter(cat_column , axis=1)
+    X_num = X.filter(num_column , axis=1)
+    return X_cat, X_num
+
 
 def feature_selection(X,y):
-    pass
+    seperate_num_cat(X)
     '''
         chisquare analysis, pearson corellation and ANOVA
         chisquare : categorial 2 categorical
@@ -40,8 +67,22 @@ def feature_selection(X,y):
         ANOVA : numerical to categorical
     '''
 
-def numerical_feature_distribution(X):
+def sk_ANOVA(X,y):
+    if X.shape[1] > 5:
+        k = int(0.8*X.shape[1])
+        X = SelectKBest(score_func=chi2,k=4).fit_transform(X, y)
+
+    return X
+
+
+def sk_pearson(X,y):
     pass
+
+def sk_chi2(X,y):
+    pass
+
+
+def numerical_feature_distribution(X,y):
     " Find out the overall distribution of datapoints over its mean"
 
 def categorical_feature_distribution(X):
