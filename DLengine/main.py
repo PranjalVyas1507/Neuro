@@ -1629,12 +1629,26 @@ def tf_cnn(parameters):
     predictions = Convo_classifier.predict_generator(test_set,test_steps_per_epoch)
     predicted_classes = np.argmax(predictions, axis=1)
 
+    i=0
+    for layer in classifier.layers:
+        w_n_b['layers'].append(layer.name)
+        if(layer.name.find("dropout")==-1):
+            w_n_b['weights'].append((layer.get_weights()[0].transpose()).tolist())
+            w_n_b['biases'].append((layer.get_weights()[1].transpose()).tolist())
+        i= i + 1
+    with open('weights.json','w') as fp :
+        json.dump(w_n_b,fp)
 
-    toelectronmain(testset.classes)
+
+    toelectronmain("Display_Message:" + testset.classes)
     cm = confusion_matrix(test_set.classes,predictions,test_set.class_indices.keys())
     toelectronmain(cm)
     shutil.rmtree('temp')
 
+    with open('result.json', 'w') as fp:
+        json.dump(loss_stats, fp)
+    checkoutputfiles()
+    toelectronmain("Final_Message : Check Result")
 
 def pyt_preprocessing(file, parameters):
     global error_occured
