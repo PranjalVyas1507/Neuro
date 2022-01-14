@@ -825,6 +825,10 @@ def create_dataset(X, y, time_steps=1):
         ys.append(y.iloc[i + time_steps])
     return np.array(Xs), np.array(ys)
 
+
+def analyse_file(input_frame, key=None):
+    pass    
+
 def data_preprocessing(file, parameters):
     # Importing the dataset
     #toelectronmain("In data preprocessing")
@@ -833,6 +837,7 @@ def data_preprocessing(file, parameters):
     try:
         global input_file
         input_frame = input_file.copy()
+        analyse_file(input_frame, key)
         #toelectronmain("input_file")
         #toelectronmain(input_file)
         toelectronmain(input_frame)
