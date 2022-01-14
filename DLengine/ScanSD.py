@@ -8,9 +8,11 @@ import numpy as np
 import pandas as pd
 
 import numpy as np
-from sklearn.feature_selection import SelectKBest, f_classif, chi2, SelectPercentile
+from sklearn.feature_selection import SelectKBest, f_classif, chi2, f_regression, SelectPercentile
 from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
 
+
+from typing import Tuple
 
 def unittest_DS(X, y, key=None):
     pass
@@ -64,19 +66,23 @@ def feature_selection(X,y):
     if y.dtype == 'object':
         pass
 
-    else y.dtype == 'int64':
+    elif y.dtype == 'int64':
         pass
 
 
 def sk_ANOVA(X,y):
     if X.shape[1] > 5:
         k = int(0.8*X.shape[1])
-        X = SelectKBest(score_func=chi2,k=k).fit_transform(X, y)
+        X = SelectKBest(score_func=f_classif,k=k).fit_transform(X, y)
 
     return X
 
 def sk_pearson(X,y):
-    pass
+    if X.shape[1] > 5:
+        k = int(0.8*X.shape[1])
+        X = SelectKBest(score_func=f_regression,k=k).fit_transform(X, y)
+
+    return X
 
 def sk_chi2(X,y):
     if X.shape[1] > 5:
@@ -93,6 +99,12 @@ def categorical_feature_distribution(X):
     pass
     "Distribution of categorical datapoints"
 
-def merge_features(t : tuple[X1, X2, ...]):
+def merge_features(t : Tuple[np.array, ...]):
     X_concat = np.hstack(t)
     return X_concat
+
+def central_tendencies(dtyp):
+    pass
+    '''
+    if categorical --->>>>
+    '''
