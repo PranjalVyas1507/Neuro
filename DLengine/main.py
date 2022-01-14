@@ -1593,6 +1593,38 @@ def tf_cnn(parameters):
                                                 class_mode = 'categorical')
 
     #======= Preprocessing ends here ===================>>>>>
+        alpha = float(parameters['learning_rate'])
+        #print(alpha)
+
+        layers = int(parameters['layers'])
+        #print(layers)
+
+        neurons = parameters['neurons']
+        #print(neurons)
+
+        activationfunction = parameters['activation']
+        #print(activationfunction)
+
+        dropouts = parameters['dropouts']
+        #print(droputs)
+
+        if(parameters['optimization']== 'SGD'):
+            optimizer = keras.optimizers.SGD(learning_rate=alpha)
+
+        elif(parameters['optimization']== 'Adam'):
+            optimizer = keras.optimizers.Adam(learning_rate=alpha)
+
+        elif(parameters['optimization']== 'Adagrad'):
+            optimizer = keras.optimizers.Adagrad(learning_rate=alpha)
+
+        elif(parameters['optimization']== 'RMSProp'):
+            optimizer = keras.optimizers.RMSprop(learning_rate=alpha)
+
+        elif(parameters['optimization']== 'Adamax'):
+            optimizer = keras.optimizers.Adamax(learning_rate=alpha)
+        #checkforreset()
+        #print(type(layers))
+        toelectronmain("Display_Message : Initialising Neural Network for Classification")
 
 
 
@@ -1619,7 +1651,7 @@ def tf_cnn(parameters):
         Convo_classifier.add(Dense(units=len(classes_list), activation='softmax'))
 
     # Compiling the Convo_classifier
-    Convo_classifier.compile(optimizer = keras.optimizers.Adam(learning_rate=0.001), loss = 'categorical_crossentropy', metrics = ['accuracy'])
+    Convo_classifier.compile(optimizer = optimizer, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
     # Training the Convo_classifier on the Training set and evaluating it on the Test set
     history = Convo_classifier.fit(x = training_set, validation_data = val_set, epochs = 50,verbose = 1, shuffle = 1)
@@ -1640,9 +1672,27 @@ def tf_cnn(parameters):
         json.dump(w_n_b,fp)
 
 
-    toelectronmain("Display_Message:" + testset.classes)
-    cm = confusion_matrix(test_set.classes,predictions,test_set.class_indices.keys())
-    toelectronmain(cm)
+    #toelectronmain("Display_Message:" + testset.classes)
+    #cm = confusion_matrix(test_set.classes,predictions,test_set.class_indices.keys())
+    try:
+        loss_stats["loss"] = history.history['loss']
+        loss_stats["val_loss"] = history.history['val_loss']
+        loss_stats["accuracy"] = history.history['accuracy']
+        loss_stats["val_accuracy"] = history.history['val_accuracy']
+        loss_stats["confusion_matrix"] = np.array(pd.DataFrame(cm)).tolist()
+
+
+
+        #toelectronmain("Error Encountered")
+
+        with open('result.json', 'w') as fp:
+            json.dump(loss_stats, fp)
+
+        toelectronmain("Final_Message : Check Result")
+    except Exception as e:
+        error_occured = True
+        toelectronmain("Error Encountered")
+    #toelectronmain(cm)
     shutil.rmtree('temp')
 
     with open('result.json', 'w') as fp:
