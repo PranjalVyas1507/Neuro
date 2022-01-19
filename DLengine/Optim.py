@@ -16,7 +16,23 @@ def find_framework(fm):
 
 
 def opt_keras():
-    pass
+    if(parameters['optimization']== 'SGD'):
+        optimizer = keras.optimizers.SGD(learning_rate=alpha)
+
+    elif(parameters['optimization']== 'Adam'):
+        optimizer = keras.optimizers.Adam(learning_rate=alpha)
+
+    elif(parameters['optimization']== 'Adagrad'):
+        optimizer = keras.optimizers.Adagrad(learning_rate=alpha)
+
+    elif(parameters['optimization']== 'RMSProp'):
+        optimizer = keras.optimizers.RMSprop(learning_rate=alpha)
+
+    elif(parameters['optimization']== 'Adamax'):
+        optimizer = keras.optimizers.Adamax(learning_rate=alpha)
+
+    elif(parameters['optimization']== 'Custom_fn'):
+        pass
 
 
 def opt_pyt():
