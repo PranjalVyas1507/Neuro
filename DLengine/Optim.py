@@ -3,37 +3,54 @@ import torch.optim as optim
 
 
 import keras
-import keras
+
+def set_optimizer(framework, optim):
+    if(framework == 'keras'):
+        return opt_keras(optim)
+    elif(framework == 'pytorch'):
+        return opt_pyt(optim)
 
 
 
-def find_framework(fm):
-    if(fm == 'keras'):
-        return opt_keras()
-    elif(fm == 'pytorch')
-        return opt_pyt()
-
-
-
-def opt_keras():
-    if(parameters['optimization']== 'SGD'):
+def opt_keras(optim):
+    if(optim == 'SGD'):
         optimizer = keras.optimizers.SGD(learning_rate=alpha)
 
-    elif(parameters['optimization']== 'Adam'):
+    elif(optim == 'Adam'):
         optimizer = keras.optimizers.Adam(learning_rate=alpha)
 
-    elif(parameters['optimization']== 'Adagrad'):
+    elif(optim == 'Adagrad'):
         optimizer = keras.optimizers.Adagrad(learning_rate=alpha)
 
-    elif(parameters['optimization']== 'RMSProp'):
+    elif(optim == 'RMSProp'):
         optimizer = keras.optimizers.RMSprop(learning_rate=alpha)
 
-    elif(parameters['optimization']== 'Adamax'):
+    elif(optim == 'Adamax'):
         optimizer = keras.optimizers.Adamax(learning_rate=alpha)
 
-    elif(parameters['optimization']== 'Custom_fn'):
+    elif(optim == 'Custom_fn'):
         pass
 
+    return optimizer
 
-def opt_pyt():
-    pass
+
+def opt_pyt(optim):
+    if(optim == 'SGD'):
+        optimizer = torch.optim.SGD(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+    elif(optim == 'Adam'):
+        optimizer = torch.optim.Adam(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+    elif(optim == 'RMSProp'):
+        optimizer = torch.optim.RMSprop(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+    elif(optim == 'Adagrad'):
+        optimizer = torch.optim.Adagrad(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+    elif(optim == 'Adamax'):
+        optimizer = torch.optim.Adamax(model.parameters(), lr=alpha, weight_decay=0.00008)
+
+    elif(optim == 'Custom_fn'):
+        pass
+
+    return optimizer
