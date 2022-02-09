@@ -122,7 +122,7 @@ var Learnings_Sub_SubDoc = new mongoose.Schema({
 
 var Project_doc = new mongoose.Schema({
     project_name : {type : String, required : true},
-    project_id : {type : ObjectId},
+    project_id : {type : String, required : true},
     date_created : {type : Date},
     date_modified : {type : Date},
     contributors : {type : Array},
