@@ -30,10 +30,6 @@ def unittest_DS(X, y, key=None):
 
     Findout NaN in X,
     Findout NaN in y
-
-
-
-
     '''
 
 def seperate_num_cat(X):
