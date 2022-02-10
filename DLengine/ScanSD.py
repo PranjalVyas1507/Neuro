@@ -30,7 +30,25 @@ def unittest_DS(X, y, key=None):
 
     Findout NaN in X,
     Findout NaN in y
+ 
     '''
+
+def find_NaN(X):
+    '''
+    Find out the NaN values in the dataset using pandas
+    '''
+    X = pd.DataFrame(X)
+    return X.isnull().sum()
+
+def remove_duplicates(X,key):
+    '''
+    Find out the duplicates in the dataset
+    '''
+    return X[X.duplicated(key, keep=False)]
+
+def del_datapoint(X,y):
+    pass
+
 
 def seperate_num_cat(X):
     cat_column = []
