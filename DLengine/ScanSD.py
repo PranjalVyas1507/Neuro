@@ -28,24 +28,40 @@ def unittest_DS(X, y, key=None):
     (Need a primary key for this, non repeatables)
 
 
-    Findout NaN in X,
-    Findout NaN in y
- 
-    '''
+    Findout null in X,
+    Findout null in y
+    
+    and store everthing in a dictionary
+    ''' 
+
+
 
 def find_NaN(X):
     '''
     Find out the NaN values in the dataset using pandas
     '''
-    X = pd.DataFrame(X)
     return X.isnull().sum()
+
+def fill_missing_data(X):
+    
+    for col in X.columns:
+        '''
+        if categorical --->>>> replace with mode
+        if numerical --->>>> replace with mean
+
+        '''
+        if X[col].dtype == 'object':
+            X[col] = X[col].fillna(X[col].mode().iloc[0])
+        
+        else:
+            X[col] = X[col].fillna(X[col].mean().iloc[0]) 
+    
 
 def remove_duplicates(X,key):
     '''
     Find out the duplicates in the dataset
     '''
     return X[X.duplicated(key, keep=False)]
-
 def del_datapoint(X,y):
     pass
 
@@ -119,6 +135,4 @@ def merge_features(t : Tuple[np.array, ...]):
 
 def central_tendencies(dtyp):
     pass
-    '''
-    if categorical --->>>>
-    '''
+
