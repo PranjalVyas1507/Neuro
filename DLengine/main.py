@@ -670,7 +670,7 @@ def create_dataset_tc(df, tokenizer, max_len, batch_size,headers,target):
 
 def split_images(source,destination,class_,set=0):
     try:
-        src_files = []
+        src_files =  []
         print(class_)
         for _,_,filenames in os.walk(source):
             src_files.extend(filenames)
@@ -697,6 +697,7 @@ def split_images(source,destination,class_,set=0):
         print(set)
         print(start)
         print(stop)
+
 
 
         for i in range(start,stop):
@@ -827,7 +828,7 @@ def create_dataset(X, y, time_steps=1):
 
 
 def analyse_file(input_frame, key=None):
-    pass    
+    pass
 
 def data_preprocessing(file, parameters):
     # Importing the dataset
@@ -837,7 +838,6 @@ def data_preprocessing(file, parameters):
     try:
         global input_file
         input_frame = input_file.copy()
-        analyse_file(input_frame, key)
         #toelectronmain("input_file")
         #toelectronmain(input_file)
         toelectronmain(input_frame)
@@ -959,16 +959,16 @@ def data_preprocessing(file, parameters):
             drop = True
                     #print(column_list)
             for column1 in inx:
-                for column2 in column_list:
+                 for column2 in column_list:
                     if(column1==column2):
                         drop = False
                         break
-                if(drop==True):
+                 if(drop==True):
                     X = X.drop(column1, axis=1)
                             #print(type(column1))
                             #print(input_frame.head())
                             #print(type(column1))
-                drop = True
+                 drop = True
 
             for column in column_list:
                 if(X[column].dtype == 'object'):
@@ -1598,38 +1598,38 @@ def tf_cnn(parameters):
                                                 class_mode = 'categorical')
 
     #======= Preprocessing ends here ===================>>>>>
-        alpha = float(parameters['learning_rate'])
+    alpha = float(parameters['learning_rate'])
         #print(alpha)
 
-        layers = int(parameters['layers'])
+    layers = int(parameters['layers'])
         #print(layers)
 
-        neurons = parameters['neurons']
+    neurons = parameters['neurons']
         #print(neurons)
 
-        activationfunction = parameters['activation']
+    activationfunction = parameters['activation']
         #print(activationfunction)
 
-        dropouts = parameters['dropouts']
+    dropouts = parameters['dropouts']
         #print(droputs)
 
-        if(parameters['optimization']== 'SGD'):
+    if(parameters['optimization']== 'SGD'):
             optimizer = keras.optimizers.SGD(learning_rate=alpha)
 
-        elif(parameters['optimization']== 'Adam'):
+    elif(parameters['optimization']== 'Adam'):
             optimizer = keras.optimizers.Adam(learning_rate=alpha)
 
-        elif(parameters['optimization']== 'Adagrad'):
+    elif(parameters['optimization']== 'Adagrad'):
             optimizer = keras.optimizers.Adagrad(learning_rate=alpha)
 
-        elif(parameters['optimization']== 'RMSProp'):
+    elif(parameters['optimization']== 'RMSProp'):
             optimizer = keras.optimizers.RMSprop(learning_rate=alpha)
 
-        elif(parameters['optimization']== 'Adamax'):
+    elif(parameters['optimization']== 'Adamax'):
             optimizer = keras.optimizers.Adamax(learning_rate=alpha)
         #checkforreset()
         #print(type(layers))
-        toelectronmain("Display_Message : Initialising Neural Network for Classification")
+    toelectronmain("Display_Message : Initialising Neural Network for Classification")
 
 
 
@@ -1667,7 +1667,7 @@ def tf_cnn(parameters):
     predicted_classes = np.argmax(predictions, axis=1)
 
     i=0
-    for layer in classifier.layers:
+    for layer in Convo_classifier.layers:
         w_n_b['layers'].append(layer.name)
         if(layer.name.find("dropout")==-1):
             w_n_b['weights'].append((layer.get_weights()[0].transpose()).tolist())
@@ -2861,8 +2861,8 @@ def pyt_cnn(parameters):
             print(train_loss.item())
             print(acc.item())
             print("training...")
-        toelectronmain("Display_Message :" + train_epoch_acc/len(train_loader))
-        toelectronmain("Display_Message :"train_epoch_loss/len(train_loader))
+        toelectronmain("Display_Message :" + (train_epoch_acc/len(train_loader)))
+        toelectronmain("Display_Message :"+ (train_epoch_loss/len(train_loader)))
         #print
 
         model.eval()
@@ -2903,7 +2903,7 @@ def pyt_cnn(parameters):
             y_pred_softmax = torch.log_softmax(y_pred,dim = 1)
             _, y_pred_tag = torch.max(y_pred_softmax, dim = 1)
             y_pred_list.append(y_pred_tag.cpu().numpy())
-            y_test_list.append(y_batch) = [ a.squeeze().tolist() for a in y_pred_list  ]
+            y_test_list.append(y_batch)
     y_test_list = [ a.squeeze().tolist() for a in y_test_list  ]
 
     #y_test_list = encoder.inverse_transform(y_test_list)
