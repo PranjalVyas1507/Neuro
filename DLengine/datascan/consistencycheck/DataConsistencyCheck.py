@@ -20,7 +20,7 @@ class DataConsistencyCheck:
         num_value = self.df[col].mean().iloc[0]
 
         if fill_value is 'zero':
-            cat_value = 'unknow_class'
+            cat_value = 'unknown_class'
             num_value = 0
 
         else:
