@@ -44,9 +44,10 @@ class DataConsistencyCheck:
     def check_duplicate_columns(self):
         duplicate_columns = set()
         for i in range(self.df.shape[1]):
-            col = iloc[:,i]
-            for j in range(i+1, iloc.shape[1]):
-                if col.equals(iloc[:,j]):
+            col = self.df.iloc[:,i]
+            for j in range(i+1, self.df.shape[1]):
+                next_col = self.df.iloc[:,j]
+                if col.equals(next_col):
                     duplicate_columns.add(col)
         return duplicate_columns
     # self.key should not be null.
