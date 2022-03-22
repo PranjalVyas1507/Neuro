@@ -31,12 +31,17 @@ class DataConsistencyCheck:
                 else:
                     self.df[col] = self.df[col].fillna(num_value)    
 
+    # self.key should not be null.
     def check_duplicate_key(self):
-        pass
+        if self.key is not None:
+            if self.df[self.key].duplicated().any():
+                return True
+        
 
     def check_duplicate_columns(self):
         pass
     
+    # self.key should not be null.
     def remove_duplicates(self):
         return self.df[self.df.duplicated(self.key, keep=False)]
     
