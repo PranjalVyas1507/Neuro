@@ -36,9 +36,9 @@ def unittest_DS(X, y, key=None):
 
 
 
-def find_NaN(X):
+def find_null(X):
     '''
-    Find out the NaN values in the dataset using pandas
+    Find out the null values in the dataset using pandas
     '''
     return X.isnull().sum()
 
