@@ -12,9 +12,26 @@ class DataConsistencyCheck:
     '''
     Total number of null values in a data frame
     '''
-    def find_null(self) :
+    def count_null(self) :
         return self.df.isnull().sum()
     
+    ###### remove null not needed as it shifts the individual dataseries
+    ####def remove_null_value(self):
+    #####    return 
+
+
+
+    '''
+    Args : self -> dataframe and key within the DDCobject,
+            fill_value -> if fill value is 
+            "mean" -- replace the null values of
+                    the numerical columns with their mean/average 
+                    with the mode values of the categorical columns
+            "zero" -- replace  the null vales of numercial columns with 0.
+                    With categorical columns, introduce a new category
+                    "unknown class."
+    '''  
+
     def fill_missing_values(self, fill_value='mean'):
         cat_value = self.df[col].mode().iloc[0]
         num_value = self.df[col].mean().iloc[0]
@@ -41,6 +58,8 @@ class DataConsistencyCheck:
     def check_duplicate_rows(self):
         pass
 
+
+    # Not Ideal. n^2    
     def check_duplicate_columns(self):
         duplicate_columns = set()
         for i in range(self.df.shape[1]):
@@ -50,9 +69,10 @@ class DataConsistencyCheck:
                 if col.equals(next_col):
                     duplicate_columns.add(col)
         return duplicate_columns
+
     # self.key should not be null.
     def remove_duplicates(self):
-        return self.df[self.df.duplicated(self.key, keep=False)]
+        return self.df[self.df.duplicated(self.key, keep='last')]
     
     def del_datapoint(self):
         pass
