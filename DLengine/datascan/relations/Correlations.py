@@ -59,6 +59,10 @@ class Correlations:
         X_num = X.filter(num_column , axis=1)
         return X_cat, X_num
 
+    def merge_features(t : Tuple[np.array, ...]):
+        X_concat = np.hstack(t)
+        return X_concat
+
 
     """
     Func: select_num_inputs

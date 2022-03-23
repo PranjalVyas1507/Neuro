@@ -209,7 +209,6 @@ angular.module('NNapp', ['ngMaterial'])
             mul.stroke = 'black';
             mul.linewidth = 1.0;
         }
-
         function DrawRect(Layer ,x_center,y_center, width, height, text)
         {
             var block = Layer.makeRoundedRectangle()
