@@ -20,7 +20,7 @@
     "electron-packager": "^15.2.0",
     "fs": "0.0.1-security",
     "path": "^0.12.7",
-    "python-shell": "^2.0.3",
+    "python-shell": "^5.0.0",
     "require.js": "^1.0.0"
   }
 }
